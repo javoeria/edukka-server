@@ -4,11 +4,13 @@ require 'C:\wamp64\www\edukka\Slim\Slim.php';
 require_once 'user-service.php';
 require_once 'class-service.php';
 require_once 'game-service.php';
+require_once 'quiz-service.php';
 \Slim\Slim::registerAutoloader();
 
 $app = new \Slim\Slim();
 $app->contentType('application/json');
 $app->get('/', function () { echo "Hello World"; } );
+$app->post('/test', 'test');
 
 // User Service
 $app->get('/users', 'getAllUsers');
@@ -18,22 +20,36 @@ $app->post('/signup', 'signUp');
 $app->get('/delete/:id', 'deleteUser');
 $app->post('/update/:id', 'updateUser');
 
-$app->get('/myclass/:id', 'getUsersClass');
-
 // Class Service
 $app->get('/classes', 'getAllClasses');
 $app->get('/class/:id', 'getClass');
-$app->post('/create-c', 'createClass');
-$app->get('/delete-c/:id', 'deleteClass');
+$app->post('/new-c', 'createClass');
+$app->get('/del-c/:id', 'deleteClass');
+$app->post('/up-c/:id', 'updateClass');
+$app->get('/myclass/:id', 'getUserClass');
+$app->get('/add', 'addUserClass');
+$app->get('/remove', 'removeUserClass');
 
 // Game Service
 $app->get('/games', 'getAllGames');
-$app->get('/search/:str', 'searchGames');
+$app->get('/games/:sub/:str', 'searchGames');
+$app->get('/games/:sub', 'getGameSubject');
 $app->get('/game/:id', 'getGame');
-$app->post('/create-g', 'createGame');
-$app->get('/delete-g/:id', 'deleteGame');
+$app->post('/new-g', 'createGame');
+$app->get('/del-g/:id', 'deleteGame');
+$app->post('/up-g/:id', 'updateGame');
+$app->get('/playgame/:id', 'getQuizGame');
+
+// Quiz Service
+$app->get('/quizzes', 'getAllQuizzes');
+$app->get('/quiz/:id', 'getQuiz');
+$app->post('/new-q', 'createQuiz');
+$app->get('/del-q/:id', 'deleteQuiz');
+$app->post('/up-c/:id', 'updateQuiz');
 
 $app->run();
+
+function test() {}
 
 function getDB() {
     $dbhost = "localhost";

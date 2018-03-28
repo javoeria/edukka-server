@@ -34,24 +34,6 @@ function getClass($id) {
     }
 }
 
-function getUsersClass($id) {
-    $sql = "SELECT * FROM user WHERE class_id=:id";
-    try {
-        $db = getDB();
-        $stmt = $db->prepare($sql);
-        $stmt->bindParam(':id', $id);
-        $stmt->execute();
-        $users = $stmt->fetchObject();
-        if ($users == false) {
-            $users = array('id'=>null); 
-        }
-        $db = null;
-        echo json_encode($users);
-    } catch(PDOException $e) {
-        echo json_encode($e->getMessage());
-    }
-}
-
 function createClass() {
     $app = \Slim\Slim::getInstance();
     $name = $app->request()->post('name');
@@ -88,6 +70,93 @@ function deleteClass($id) {
             $output = array('status'=>true, 'message'=>"delete success");
         } else {
             $output = array('status'=>false, 'message'=>"delete fail");
+        }
+        $db = null;
+        echo json_encode($output);
+    } catch(PDOException $e) {
+        echo json_encode($e->getMessage());
+    }
+}
+
+function updateClass($id) {
+    $app = \Slim\Slim::getInstance();
+    $name = $app->request()->post('name');
+    $school = $app->request()->post('school');
+    $sql = "UPDATE class SET name=:name,school=:school WHERE id=:id";
+    try {
+        $db = getDB();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        $stmt->bindParam(':name', $name);
+        $stmt->bindParam(':school', $school);
+        $stmt->execute();
+        if ($stmt->rowCount() == 1) {
+            $output = array('status'=>"1", 'message'=>"update success");
+        } else {
+            $output = array('status'=>"0", 'message'=>"update fail");
+        }
+        $db = null;
+        echo json_encode($output);
+    } catch(PDOException $e) {
+        echo json_encode($e->getMessage());
+    }
+}
+
+function getUserClass($id) {
+    $sql = "SELECT * FROM user WHERE class_id=:id";
+    try {
+        $db = getDB();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        $classes = $stmt->fetchAll(PDO::FETCH_OBJ);
+        if ($users == false) {
+            $users = array('id'=>null); 
+        }
+        $db = null;
+        echo json_encode($users);
+    } catch(PDOException $e) {
+        echo json_encode($e->getMessage());
+    }
+}
+
+function addUserClass() {
+    $app = \Slim\Slim::getInstance();
+    $class_id = $app->request()->post('class');
+    $user_id = $app->request()->post('user'); 
+    $sql = "UPDATE user SET class_id=:class WHERE id=:user";
+    try {
+        $db = getDB();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':class', $class_id);
+        $stmt->bindParam(':user', $user_id);
+        $stmt->execute();
+        if ($stmt->rowCount() == 1) {
+            $output = array('status'=>"1", 'message'=>"update success");
+        } else {
+            $output = array('status'=>"0", 'message'=>"update fail");
+        }
+        $db = null;
+        echo json_encode($output);
+    } catch(PDOException $e) {
+        echo json_encode($e->getMessage());
+    }
+}
+
+function removeUserClass() {
+    $app = \Slim\Slim::getInstance();
+    $user_id = $app->request()->post('user'); 
+    $sql = "UPDATE user SET class_id=:class WHERE id=:user";
+    try {
+        $db = getDB();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':class', null);
+        $stmt->bindParam(':user', $user_id);
+        $stmt->execute();
+        if ($stmt->rowCount() == 1) {
+            $output = array('status'=>"1", 'message'=>"update success");
+        } else {
+            $output = array('status'=>"0", 'message'=>"update fail");
         }
         $db = null;
         echo json_encode($output);

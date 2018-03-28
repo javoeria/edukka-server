@@ -38,20 +38,17 @@ function logIn() {
     $app = \Slim\Slim::getInstance();
     $username = $app->request()->post('username');
     $password = $app->request()->post('password');
-    $sql = "SELECT count(*) FROM user WHERE username=:username AND password=:password";
+    $sql = "SELECT * FROM user WHERE username=:username";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
         $stmt->bindParam(':username', $username);
-        $stmt->bindParam(':password', $password);
         $stmt->execute();
-	if ($stmt->fetchColumn() > 0) {
-            $output = array('status'=>true, 'message'=>"login sucess");   
-        } else {
-            $output = array('status'=>false, 'message'=>"login fail");  
-	}
+        $user = $stmt->fetchObject();
+	if (password_verify($password, $user->password)) {
+            echo json_encode($user); 
+        }
         $db = null;
-        echo json_encode($output);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -63,6 +60,7 @@ function signUp() {
     $surname = $app->request()->post('surname');
     $username = $app->request()->post('username');
     $password = $app->request()->post('password');
+    $encrypt = password_hash($password, PASSWORD_DEFAULT);
     $sql1 = "SELECT count(*) FROM user WHERE username=:username";
     try {
         $db = getDB();
@@ -72,21 +70,22 @@ function signUp() {
         if ($stmt->fetchColumn() > 0) {
             $output = array('status'=>false, 'message'=>"signup fail");
         } else {
-            $sql2 = "INSERT INTO user (name,surname,username,password) VALUES (:name,:surname,:username,:password)";
+            $sql2 = "INSERT INTO user (name,surname,username,password,score) VALUES (:name,:surname,:username,:password,0)";
             $stmt = $db->prepare($sql2);
             $stmt->bindParam(':name', $name);
             $stmt->bindParam(':surname', $surname);
             $stmt->bindParam(':username', $username);
-            $stmt->bindParam(':password', $password);
+            $stmt->bindParam(':password', $encrypt);
             $stmt->execute();
             if ($stmt->rowCount() == 1) {
                 $output = array('status'=>true, 'message'=>"signup success");
+                echo login();
             } else {
                 $output = array('status'=>false, 'message'=>"signup fail");
             }
         }
         $db = null;
-        echo json_encode($output);
+        
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -94,13 +93,18 @@ function signUp() {
 
 function updateUser($id) {
     $app = \Slim\Slim::getInstance();
-    $name = $app->request()->post('name'); 
-    $sql = "UPDATE user SET name=:name WHERE id=:id";
+    $name = $app->request()->post('name');
+    $surname = $app->request()->post('surname');
+    $password = $app->request()->post('password');
+    $encrypt = password_hash($password, PASSWORD_DEFAULT);
+    $sql = "UPDATE user SET name=:name,surname=:surname,password=:password WHERE id=:id";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam(':name', $name);
         $stmt->bindParam(':id', $id);
+        $stmt->bindParam(':name', $name);
+        $stmt->bindParam(':surname', $surname);
+        $stmt->bindParam(':password', $encrypt);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
             $output = array('status'=>"1", 'message'=>"update success");
