@@ -34,6 +34,24 @@ function getClass($id) {
     }
 }
 
+function getUserClass($id) {
+    $sql = "SELECT * FROM user WHERE class_id=:id";
+    try {
+        $db = getDB();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        $users = $stmt->fetchAll(PDO::FETCH_OBJ);
+        if ($users == false) {
+            $users = array('id'=>null); 
+        }
+        $db = null;
+        echo json_encode($users);
+    } catch(PDOException $e) {
+        echo json_encode($e->getMessage());
+    }
+}
+
 function createClass() {
     $app = \Slim\Slim::getInstance();
     $name = $app->request()->post('name');
@@ -48,9 +66,9 @@ function createClass() {
         $stmt->bindParam(':teacher_id', $teacher_id);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>true, 'message'=>"create success");
+            $output = array('status'=>true, 'message'=>"class create success");
         } else {
-            $output = array('status'=>false, 'message'=>"create fail");            
+            $output = array('status'=>false, 'message'=>"class create fail");            
         }
         $db = null;
         echo json_encode($output);
@@ -59,27 +77,9 @@ function createClass() {
     }
 }
 
-function deleteClass($id) {
-    $sql = "DELETE FROM class WHERE id=:id";
-    try {
-        $db = getDB();
-        $stmt = $db->prepare($sql);
-        $stmt->bindParam('id', $id);
-        $stmt->execute();
-        if ($stmt->rowCount() == 1) {
-            $output = array('status'=>true, 'message'=>"delete success");
-        } else {
-            $output = array('status'=>false, 'message'=>"delete fail");
-        }
-        $db = null;
-        echo json_encode($output);
-    } catch(PDOException $e) {
-        echo json_encode($e->getMessage());
-    }
-}
-
-function updateClass($id) {
+function updateClass() {
     $app = \Slim\Slim::getInstance();
+    $id = $app->request()->post('id');
     $name = $app->request()->post('name');
     $school = $app->request()->post('school');
     $sql = "UPDATE class SET name=:name,school=:school WHERE id=:id";
@@ -91,9 +91,9 @@ function updateClass($id) {
         $stmt->bindParam(':school', $school);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>"1", 'message'=>"update success");
+            $output = array('status'=>true, 'message'=>"class update success");
         } else {
-            $output = array('status'=>"0", 'message'=>"update fail");
+            $output = array('status'=>false, 'message'=>"class update fail");
         }
         $db = null;
         echo json_encode($output);
@@ -102,19 +102,22 @@ function updateClass($id) {
     }
 }
 
-function getUserClass($id) {
-    $sql = "SELECT * FROM user WHERE class_id=:id";
+function deleteClass() {
+    $app = \Slim\Slim::getInstance();
+    $id = $app->request()->post('id');
+    $sql = "DELETE FROM class WHERE id=:id";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam(':id', $id);
+        $stmt->bindParam('id', $id);
         $stmt->execute();
-        $classes = $stmt->fetchAll(PDO::FETCH_OBJ);
-        if ($users == false) {
-            $users = array('id'=>null); 
+        if ($stmt->rowCount() == 1) {
+            $output = array('status'=>true, 'message'=>"class delete success");
+        } else {
+            $output = array('status'=>false, 'message'=>"class delete fail");
         }
         $db = null;
-        echo json_encode($users);
+        echo json_encode($output);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -132,9 +135,9 @@ function addUserClass() {
         $stmt->bindParam(':user', $user_id);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>"1", 'message'=>"update success");
+            $output = array('status'=>"1", 'message'=>"add user success");
         } else {
-            $output = array('status'=>"0", 'message'=>"update fail");
+            $output = array('status'=>"0", 'message'=>"add user fail");
         }
         $db = null;
         echo json_encode($output);
@@ -154,9 +157,9 @@ function removeUserClass() {
         $stmt->bindParam(':user', $user_id);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>"1", 'message'=>"update success");
+            $output = array('status'=>"1", 'message'=>"remove user success");
         } else {
-            $output = array('status'=>"0", 'message'=>"update fail");
+            $output = array('status'=>"0", 'message'=>"remove user fail");
         }
         $db = null;
         echo json_encode($output);

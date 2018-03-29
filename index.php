@@ -15,37 +15,43 @@ $app->post('/test', 'test');
 // User Service
 $app->get('/users', 'getAllUsers');
 $app->get('/user/:id', 'getUser');
+$app->get('/history/:id', 'getHistory');
 $app->post('/login', 'logIn');
 $app->post('/signup', 'signUp');
-$app->get('/delete/:id', 'deleteUser');
-$app->post('/update/:id', 'updateUser');
+$app->post('/edit/user', 'updateUser');
+$app->post('/delete/user', 'deleteUser');
+$app->post('/new/student', 'createStudent');
+$app->post('/new/teacher', 'createTeacher');
 
 // Class Service
 $app->get('/classes', 'getAllClasses');
 $app->get('/class/:id', 'getClass');
-$app->post('/new-c', 'createClass');
-$app->get('/del-c/:id', 'deleteClass');
-$app->post('/up-c/:id', 'updateClass');
 $app->get('/myclass/:id', 'getUserClass');
-$app->get('/add', 'addUserClass');
-$app->get('/remove', 'removeUserClass');
+$app->post('/new/class', 'createClass');
+$app->post('/edit/class', 'updateClass');
+$app->post('/delete/class', 'deleteClass');
+$app->post('/add', 'addUserClass');
+$app->post('/remove', 'removeUserClass');
 
 // Game Service
 $app->get('/games', 'getAllGames');
-$app->get('/games/:sub/:str', 'searchGames');
+$app->get('/games/:sub&:str', 'searchGames');
 $app->get('/games/:sub', 'getGameSubject');
 $app->get('/game/:id', 'getGame');
-$app->post('/new-g', 'createGame');
-$app->get('/del-g/:id', 'deleteGame');
-$app->post('/up-g/:id', 'updateGame');
-$app->get('/playgame/:id', 'getQuizGame');
+$app->post('/new/game', 'createGame');
+$app->post('/edit/game', 'updateGame');
+$app->post('/delete/game', 'deleteGame');
+$app->post('/finish', 'finishGame');
+$app->post('/upvote', 'upvoteGame');
+$app->post('/downvote', 'downvoteGame');
 
 // Quiz Service
 $app->get('/quizzes', 'getAllQuizzes');
 $app->get('/quiz/:id', 'getQuiz');
-$app->post('/new-q', 'createQuiz');
-$app->get('/del-q/:id', 'deleteQuiz');
-$app->post('/up-c/:id', 'updateQuiz');
+$app->get('/play/:id', 'getQuizGame');
+$app->post('/new/quiz', 'createQuiz');
+$app->post('/edit/quiz', 'updateQuiz');
+$app->post('/delete/quiz', 'deleteQuiz');
 
 $app->run();
 

@@ -23,12 +23,12 @@ function getQuizGame($id) {
         $stmt = $db->prepare($sql);
         $stmt->bindParam(':id', $id);
         $stmt->execute();
-        $quiz = $stmt->fetchAll(PDO::FETCH_OBJ);
-        if ($quiz == false) {
-            $quiz = array('id'=>null);
+        $quizzes = $stmt->fetchAll(PDO::FETCH_OBJ);
+        if ($quizzes == false) {
+            $quizzes = array('id'=>null);
         }
         $db = null;
-        echo json_encode($quiz);
+        echo json_encode($quizzes);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -72,9 +72,9 @@ function createQuiz() {
         $stmt->bindParam(':game_id', $game_id);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>true, 'message'=>"create success");
+            $output = array('status'=>true, 'message'=>"quiz create success");
         } else {
-            $output = array('status'=>false, 'message'=>"create fail");            
+            $output = array('status'=>false, 'message'=>"quiz create fail");            
         }
         $db = null;
         echo json_encode($output);
@@ -83,27 +83,9 @@ function createQuiz() {
     }
 }
 
-function deleteQuiz($id) {
-    $sql = "DELETE FROM quiz WHERE id=:id";
-    try {
-        $db = getDB();
-        $stmt = $db->prepare($sql);
-        $stmt->bindParam('id', $id);
-        $stmt->execute();
-        if ($stmt->rowCount() == 1) {
-            $output = array('status'=>true, 'message'=>"delete success");
-        } else {
-            $output = array('status'=>false, 'message'=>"delete fail");
-        }
-        $db = null;
-        echo json_encode($output);
-    } catch(PDOException $e) {
-        echo json_encode($e->getMessage());
-    }
-}
-
-function updateQuiz($id) {
+function updateQuiz() {
     $app = \Slim\Slim::getInstance();
+    $id = $app->request()->post('id');
     $type = $app->request()->post('type');
     $question = $app->request()->post('question');
     $answer = $app->request()->post('answer');
@@ -121,9 +103,30 @@ function updateQuiz($id) {
         $stmt->bindParam(':hint', $hint);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>"1", 'message'=>"update success");
+            $output = array('status'=>true, 'message'=>"quiz update success");
         } else {
-            $output = array('status'=>"0", 'message'=>"update fail");
+            $output = array('status'=>false, 'message'=>"quiz update fail");
+        }
+        $db = null;
+        echo json_encode($output);
+    } catch(PDOException $e) {
+        echo json_encode($e->getMessage());
+    }
+}
+
+function deleteQuiz() {
+    $app = \Slim\Slim::getInstance();
+    $id = $app->request()->post('id');
+    $sql = "DELETE FROM quiz WHERE id=:id";
+    try {
+        $db = getDB();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam('id', $id);
+        $stmt->execute();
+        if ($stmt->rowCount() == 1) {
+            $output = array('status'=>true, 'message'=>"quiz delete success");
+        } else {
+            $output = array('status'=>false, 'message'=>"quiz delete fail");
         }
         $db = null;
         echo json_encode($output);

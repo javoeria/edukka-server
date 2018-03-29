@@ -34,6 +34,24 @@ function getUser($id) {
     }
 }
 
+function getHistory($id) {
+    $sql = "SELECT * FROM student_game WHERE student_id=:id";
+    try {
+        $db = getDB();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        $history = $stmt->fetchAll(PDO::FETCH_OBJ);
+        if ($history == false) {
+            $history = array('id'=>null); 
+        }
+        $db = null;
+        echo json_encode($history);
+    } catch(PDOException $e) {
+        echo json_encode($e->getMessage());
+    }
+}
+
 function logIn() {
     $app = \Slim\Slim::getInstance();
     $username = $app->request()->post('username');
@@ -45,9 +63,10 @@ function logIn() {
         $stmt->bindParam(':username', $username);
         $stmt->execute();
         $user = $stmt->fetchObject();
-	if (password_verify($password, $user->password)) {
-            echo json_encode($user); 
+	if ($user == false || !password_verify($password, $user->password)) {
+            $user = array('id'=>null); 
         }
+        echo json_encode($user); 
         $db = null;
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
@@ -64,35 +83,36 @@ function signUp() {
     $sql1 = "SELECT count(*) FROM user WHERE username=:username";
     try {
         $db = getDB();
-        $stmt = $db->prepare($sql1);
-        $stmt->bindParam(':username', $username);
-        $stmt->execute();
-        if ($stmt->fetchColumn() > 0) {
-            $output = array('status'=>false, 'message'=>"signup fail");
+        $stmt1 = $db->prepare($sql1);
+        $stmt1->bindParam(':username', $username);
+        $stmt1->execute();
+        if ($stmt1->fetchColumn() > 0) {
+            $output = array('status'=>false, 'message'=>"user create fail");
         } else {
             $sql2 = "INSERT INTO user (name,surname,username,password,score) VALUES (:name,:surname,:username,:password,0)";
-            $stmt = $db->prepare($sql2);
-            $stmt->bindParam(':name', $name);
-            $stmt->bindParam(':surname', $surname);
-            $stmt->bindParam(':username', $username);
-            $stmt->bindParam(':password', $encrypt);
-            $stmt->execute();
-            if ($stmt->rowCount() == 1) {
-                $output = array('status'=>true, 'message'=>"signup success");
-                echo login();
+            $stmt2 = $db->prepare($sql2);
+            $stmt2->bindParam(':name', $name);
+            $stmt2->bindParam(':surname', $surname);
+            $stmt2->bindParam(':username', $username);
+            $stmt2->bindParam(':password', $encrypt);
+            $stmt2->execute();
+            if ($stmt2->rowCount() == 1) {
+                $output = array('status'=>true, 'message'=>"user create success");
+                //echo login();
             } else {
-                $output = array('status'=>false, 'message'=>"signup fail");
+                $output = array('status'=>false, 'message'=>"user create fail");
             }
         }
         $db = null;
-        
+        echo json_encode($output);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
 }
 
-function updateUser($id) {
+function updateUser() {
     $app = \Slim\Slim::getInstance();
+    $id = $app->request()->post('id');
     $name = $app->request()->post('name');
     $surname = $app->request()->post('surname');
     $password = $app->request()->post('password');
@@ -107,9 +127,9 @@ function updateUser($id) {
         $stmt->bindParam(':password', $encrypt);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>"1", 'message'=>"update success");
+            $output = array('status'=>true, 'message'=>"user update success");
         } else {
-            $output = array('status'=>"0", 'message'=>"update fail");
+            $output = array('status'=>false, 'message'=>"user update fail");
         }
         $db = null;
         echo json_encode($output);
@@ -118,7 +138,9 @@ function updateUser($id) {
     }
 }
 
-function deleteUser($id) {
+function deleteUser() {
+    $app = \Slim\Slim::getInstance();
+    $id = $app->request()->post('id');
     $sql = "DELETE FROM user WHERE id=:id";
     try {
         $db = getDB();
@@ -126,9 +148,51 @@ function deleteUser($id) {
         $stmt->bindParam('id', $id);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>true, 'message'=>"delete success");
+            $output = array('status'=>true, 'message'=>"user delete success");
         } else {
-            $output = array('status'=>false, 'message'=>"delete fail");
+            $output = array('status'=>false, 'message'=>"user delete fail");
+        }
+        $db = null;
+        echo json_encode($output);
+    } catch(PDOException $e) {
+        echo json_encode($e->getMessage());
+    }
+}
+
+function createStudent() {
+    $app = \Slim\Slim::getInstance();
+    $user_id = $app->request()->post('user_id');
+    $sql = "INSERT INTO student (user_id) VALUES (:user_id)";
+    try {
+        $db = getDB();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':user_id', $user_id);
+        $stmt->execute();
+        if ($stmt->rowCount() == 1) {
+            $output = array('status'=>true, 'message'=>"student create success");
+        } else {
+            $output = array('status'=>false, 'message'=>"student create fail");            
+        }
+        $db = null;
+        echo json_encode($output);
+    } catch(PDOException $e) {
+        echo json_encode($e->getMessage());
+    }
+}
+
+function createTeacher() {
+    $app = \Slim\Slim::getInstance();
+    $user_id = $app->request()->post('user_id');
+    $sql = "INSERT INTO teacher (user_id) VALUES (:user_id)";
+    try {
+        $db = getDB();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':user_id', $user_id);
+        $stmt->execute();
+        if ($stmt->rowCount() == 1) {
+            $output = array('status'=>true, 'message'=>"teacher create success");
+        } else {
+            $output = array('status'=>false, 'message'=>"teacher create fail");            
         }
         $db = null;
         echo json_encode($output);
