@@ -72,12 +72,13 @@ function createQuiz() {
         $stmt->bindParam(':game_id', $game_id);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>true, 'message'=>"quiz create success");
+            $id = $db->lastInsertId();
+            echo getQuiz($id);
         } else {
-            $output = array('status'=>false, 'message'=>"quiz create fail");            
+            $output = array('id'=>null);
+            echo json_encode($output); 
         }
         $db = null;
-        echo json_encode($output);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -103,12 +104,12 @@ function updateQuiz() {
         $stmt->bindParam(':hint', $hint);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>true, 'message'=>"quiz update success");
+            echo getQuiz($id);
         } else {
-            $output = array('status'=>false, 'message'=>"quiz update fail");
+            $output = array('id'=>null);
+            echo json_encode($output);
         }
         $db = null;
-        echo json_encode($output);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -124,9 +125,9 @@ function deleteQuiz() {
         $stmt->bindParam('id', $id);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>true, 'message'=>"quiz delete success");
+            $output = array('id'=>1);
         } else {
-            $output = array('status'=>false, 'message'=>"quiz delete fail");
+            $output = array('id'=>0);
         }
         $db = null;
         echo json_encode($output);

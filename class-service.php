@@ -66,12 +66,13 @@ function createClass() {
         $stmt->bindParam(':teacher_id', $teacher_id);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>true, 'message'=>"class create success");
+            $id = $db->lastInsertId();
+            echo getClass($id);
         } else {
-            $output = array('status'=>false, 'message'=>"class create fail");            
+            $output = array('id'=>null);
+            echo json_encode($output);          
         }
         $db = null;
-        echo json_encode($output);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -91,12 +92,12 @@ function updateClass() {
         $stmt->bindParam(':school', $school);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>true, 'message'=>"class update success");
+            echo getClass($id);
         } else {
-            $output = array('status'=>false, 'message'=>"class update fail");
+            $output = array('id'=>null);
+            echo json_encode($output);
         }
         $db = null;
-        echo json_encode($output);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -112,9 +113,9 @@ function deleteClass() {
         $stmt->bindParam('id', $id);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>true, 'message'=>"class delete success");
+            $output = array('id'=>1);
         } else {
-            $output = array('status'=>false, 'message'=>"class delete fail");
+            $output = array('id'=>0);
         }
         $db = null;
         echo json_encode($output);
@@ -135,12 +136,12 @@ function addUserClass() {
         $stmt->bindParam(':user', $user_id);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>"1", 'message'=>"add user success");
+            echo getUserClass($class_id);
         } else {
-            $output = array('status'=>"0", 'message'=>"add user fail");
+            $output = array('id'=>null);
+            echo json_encode($output);     
         }
         $db = null;
-        echo json_encode($output);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -157,9 +158,9 @@ function removeUserClass() {
         $stmt->bindParam(':user', $user_id);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>"1", 'message'=>"remove user success");
+            $output = array('id'=>1);
         } else {
-            $output = array('status'=>"0", 'message'=>"remove user fail");
+            $output = array('id'=>0);
         }
         $db = null;
         echo json_encode($output);

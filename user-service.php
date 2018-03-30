@@ -43,7 +43,7 @@ function getHistory($id) {
         $stmt->execute();
         $history = $stmt->fetchAll(PDO::FETCH_OBJ);
         if ($history == false) {
-            $history = array('id'=>null); 
+            $history = array('student_id'=>null); 
         }
         $db = null;
         echo json_encode($history);
@@ -87,7 +87,8 @@ function signUp() {
         $stmt1->bindParam(':username', $username);
         $stmt1->execute();
         if ($stmt1->fetchColumn() > 0) {
-            $output = array('status'=>false, 'message'=>"user create fail");
+            $output = array('id'=>null);
+            echo json_encode($output);
         } else {
             $sql2 = "INSERT INTO user (name,surname,username,password,score) VALUES (:name,:surname,:username,:password,0)";
             $stmt2 = $db->prepare($sql2);
@@ -97,14 +98,14 @@ function signUp() {
             $stmt2->bindParam(':password', $encrypt);
             $stmt2->execute();
             if ($stmt2->rowCount() == 1) {
-                $output = array('status'=>true, 'message'=>"user create success");
-                //echo login();
+                $id = $db->lastInsertId();
+                echo getUser($id);
             } else {
-                $output = array('status'=>false, 'message'=>"user create fail");
+                $output = array('id'=>null);
+                echo json_encode($output);
             }
         }
         $db = null;
-        echo json_encode($output);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -127,12 +128,12 @@ function updateUser() {
         $stmt->bindParam(':password', $encrypt);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>true, 'message'=>"user update success");
+            echo getUser($id);
         } else {
-            $output = array('status'=>false, 'message'=>"user update fail");
+            $output = array('id'=>null);
+            echo json_encode($output);
         }
         $db = null;
-        echo json_encode($output);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -148,9 +149,9 @@ function deleteUser() {
         $stmt->bindParam('id', $id);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>true, 'message'=>"user delete success");
+            $output = array('id'=>1);
         } else {
-            $output = array('status'=>false, 'message'=>"user delete fail");
+            $output = array('id'=>0);
         }
         $db = null;
         echo json_encode($output);
@@ -169,9 +170,9 @@ function createStudent() {
         $stmt->bindParam(':user_id', $user_id);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>true, 'message'=>"student create success");
+            $output = array('id'=>1);
         } else {
-            $output = array('status'=>false, 'message'=>"student create fail");            
+            $output = array('id'=>0);
         }
         $db = null;
         echo json_encode($output);
@@ -190,9 +191,9 @@ function createTeacher() {
         $stmt->bindParam(':user_id', $user_id);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>true, 'message'=>"teacher create success");
+            $output = array('id'=>1);
         } else {
-            $output = array('status'=>false, 'message'=>"teacher create fail");            
+            $output = array('id'=>0);
         }
         $db = null;
         echo json_encode($output);

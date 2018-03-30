@@ -82,16 +82,18 @@ function createGame() {
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam(':subject', subject);
-        $stmt->bindParam(':title', title);
-        $stmt->bindParam(':description', description);
-        $stmt->bindParam(':difficulty', difficulty);
-        $stmt->bindParam(':teacher_id', teacher_id);
+        $stmt->bindParam(':subject', $subject);
+        $stmt->bindParam(':title', $title);
+        $stmt->bindParam(':description', $description);
+        $stmt->bindParam(':difficulty', $difficulty);
+        $stmt->bindParam(':teacher_id', $teacher_id);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>true, 'message'=>"game create success");
+            $id = $db->lastInsertId();
+            echo getGame($id);
         } else {
-            $output = array('status'=>false, 'message'=>"game create fail");            
+            $output = array('id'=>null);
+            echo json_encode($output);
         }
         $db = null;
         echo json_encode($output);
@@ -118,9 +120,10 @@ function updateGame() {
         $stmt->bindParam(':difficulty', $difficulty);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>true, 'message'=>"game update success");
+            echo getGame($id);
         } else {
-            $output = array('status'=>false, 'message'=>"game update fail");
+            $output = array('id'=>null);
+            echo json_encode($output);
         }
         $db = null;
         echo json_encode($output);
@@ -139,9 +142,9 @@ function deleteGame() {
         $stmt->bindParam('id', $id);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>true, 'message'=>"game delete success");
+            $output = array('id'=>1);
         } else {
-            $output = array('status'=>false, 'message'=>"game delete fail");
+            $output = array('id'=>0);
         }
         $db = null;
         echo json_encode($output);
@@ -162,9 +165,9 @@ function finishGame() {
         $stmt->bindParam(':game_id', $game_id);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>true, 'message'=>"finish game success");
+            $output = array('id'=>1);
         } else {
-            $output = array('status'=>false, 'message'=>"finish game fail");            
+            $output = array('id'=>0);
         }
         $db = null;
         echo json_encode($output);
@@ -183,9 +186,9 @@ function upvoteGame() {
         $stmt->bindParam(':id', $id);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>true, 'message'=>"upvote game success");
+            $output = array('id'=>1);
         } else {
-            $output = array('status'=>false, 'message'=>"upvote game fail");
+            $output = array('id'=>0);
         }
         $db = null;
         echo json_encode($output);
@@ -204,9 +207,9 @@ function downvoteGame() {
         $stmt->bindParam(':id', $id);
         $stmt->execute();
         if ($stmt->rowCount() == 1) {
-            $output = array('status'=>true, 'message'=>"downvote game success");
+            $output = array('id'=>1);
         } else {
-            $output = array('status'=>false, 'message'=>"downvote game fail");
+            $output = array('id'=>0);
         }
         $db = null;
         echo json_encode($output);
