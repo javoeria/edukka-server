@@ -16,24 +16,6 @@ function getAllQuizzes() {
     }
 }
 
-function getQuizGame($id) {
-    $sql = "SELECT * FROM quiz WHERE game_id=:id";
-    try {
-        $db = getDB();
-        $stmt = $db->prepare($sql);
-        $stmt->bindParam(':id', $id);
-        $stmt->execute();
-        $quizzes = $stmt->fetchAll(PDO::FETCH_OBJ);
-        if ($quizzes == false) {
-            $quizzes = array('id'=>null);
-        }
-        $db = null;
-        echo json_encode($quizzes);
-    } catch(PDOException $e) {
-        echo json_encode($e->getMessage());
-    }
-}
-
 function getQuiz($id) {
     $sql = "SELECT * FROM quiz WHERE id=:id";
     try {
@@ -47,6 +29,24 @@ function getQuiz($id) {
         }
         $db = null;
         echo json_encode($quiz);
+    } catch(PDOException $e) {
+        echo json_encode($e->getMessage());
+    }
+}
+
+function getGameQuiz($game_id) {
+    $sql = "SELECT * FROM quiz WHERE game_id=:game_id";
+    try {
+        $db = getDB();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':game_id', $game_id);
+        $stmt->execute();
+        $quizzes = $stmt->fetchAll(PDO::FETCH_OBJ);
+        if ($quizzes == false) {
+            $quizzes = array('id'=>null);
+        }
+        $db = null;
+        echo json_encode($quizzes);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -71,14 +71,9 @@ function createQuiz() {
         $stmt->bindParam(':hint', $hint);
         $stmt->bindParam(':game_id', $game_id);
         $stmt->execute();
-        if ($stmt->rowCount() == 1) {
-            $id = $db->lastInsertId();
-            echo getQuiz($id);
-        } else {
-            $output = array('id'=>null);
-            echo json_encode($output); 
-        }
+        $id = $db->lastInsertId();
         $db = null;
+        echo getQuiz($id);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -103,13 +98,8 @@ function updateQuiz() {
         $stmt->bindParam(':option', $option);
         $stmt->bindParam(':hint', $hint);
         $stmt->execute();
-        if ($stmt->rowCount() == 1) {
-            echo getQuiz($id);
-        } else {
-            $output = array('id'=>null);
-            echo json_encode($output);
-        }
         $db = null;
+        echo getQuiz($id);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -124,13 +114,20 @@ function deleteQuiz() {
         $stmt = $db->prepare($sql);
         $stmt->bindParam('id', $id);
         $stmt->execute();
-        if ($stmt->rowCount() == 1) {
-            $output = array('id'=>1);
-        } else {
-            $output = array('id'=>0);
-        }
         $db = null;
-        echo json_encode($output);
+    } catch(PDOException $e) {
+        echo json_encode($e->getMessage());
+    }
+}
+
+function deleteGameQuiz($game_id) {
+    $sql = "DELETE FROM quiz WHERE game_id=:game_id";
+    try {
+        $db = getDB();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam('game_id', $game_id);
+        $stmt->execute();
+        $db = null;
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }

@@ -34,12 +34,12 @@ function getClass($id) {
     }
 }
 
-function getUserClass($id) {
-    $sql = "SELECT * FROM user WHERE class_id=:id";
+function getUserClass($class_id) {
+    $sql = "SELECT * FROM user WHERE class_id=:class_id";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam(':id', $id);
+        $stmt->bindParam(':class_id', $class_id);
         $stmt->execute();
         $users = $stmt->fetchAll(PDO::FETCH_OBJ);
         if ($users == false) {
@@ -52,27 +52,51 @@ function getUserClass($id) {
     }
 }
 
+function getClassActivity($class_id) {
+    $sql1 = "SELECT * FROM user WHERE class_id=:class_id";
+    try {
+        $db = getDB();
+        $stmt1 = $db->prepare($sql1);
+        $stmt1->bindParam(':class_id', $class_id);
+        $stmt1->execute();
+        $users = $stmt1->fetchAll(PDO::FETCH_OBJ);
+        if ($users == false) {
+            $activity = array('id'=>null); 
+        } else {
+            $json = json_encode($users);
+            $array = json_decode($json, TRUE);
+            $sql2 = "SELECT * FROM activity WHERE student_id IN (".implode(',',array_column($array, 'id')).")";
+            $stmt2 = $db->prepare($sql2);
+            $stmt2->execute();
+            $activity = $stmt2->fetchAll(PDO::FETCH_OBJ);
+            if ($activity == false ) {
+                $activity = array('student_id'=>null); 
+            }
+        }
+        $db = null;
+        echo json_encode($activity);
+    } catch(PDOException $e) {
+        echo json_encode($e->getMessage());
+    }
+}
+
 function createClass() {
     $app = \Slim\Slim::getInstance();
     $name = $app->request()->post('name');
-    $school = $app->request()->post('school');
+    $information = $app->request()->post('information');
     $teacher_id = $app->request()->post('teacher_id');
-    $sql = "INSERT INTO class (name,school,teacher_id) VALUES (:name,:school,:teacher_id)";
+    $sql = "INSERT INTO class (name,information,teacher_id) VALUES (:name,:information,:teacher_id)";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
         $stmt->bindParam(':name', $name);
-        $stmt->bindParam(':school', $school);
+        $stmt->bindParam(':information', $information);
         $stmt->bindParam(':teacher_id', $teacher_id);
         $stmt->execute();
-        if ($stmt->rowCount() == 1) {
-            $id = $db->lastInsertId();
-            echo getClass($id);
-        } else {
-            $output = array('id'=>null);
-            echo json_encode($output);          
-        }
+        $id = $db->lastInsertId();
         $db = null;
+        addUserClass($id, $teacher_id);
+        echo getClass($id);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -82,22 +106,17 @@ function updateClass() {
     $app = \Slim\Slim::getInstance();
     $id = $app->request()->post('id');
     $name = $app->request()->post('name');
-    $school = $app->request()->post('school');
-    $sql = "UPDATE class SET name=:name,school=:school WHERE id=:id";
+    $information = $app->request()->post('information');
+    $sql = "UPDATE class SET name=:name,information=:information WHERE id=:id";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
         $stmt->bindParam(':id', $id);
         $stmt->bindParam(':name', $name);
-        $stmt->bindParam(':school', $school);
-        $stmt->execute();
-        if ($stmt->rowCount() == 1) {
-            echo getClass($id);
-        } else {
-            $output = array('id'=>null);
-            echo json_encode($output);
-        }
+        $stmt->bindParam(':information', $information);
+        $stmt->execute();   
         $db = null;
+        echo getClass($id);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -112,58 +131,48 @@ function deleteClass() {
         $stmt = $db->prepare($sql);
         $stmt->bindParam('id', $id);
         $stmt->execute();
-        if ($stmt->rowCount() == 1) {
-            $output = array('id'=>1);
-        } else {
-            $output = array('id'=>0);
-        }
         $db = null;
-        echo json_encode($output);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
 }
 
-function addUserClass() {
-    $app = \Slim\Slim::getInstance();
-    $class_id = $app->request()->post('class');
-    $user_id = $app->request()->post('user'); 
+function deleteTeacherClass($teacher_id) {
+    $sql = "DELETE FROM class WHERE teacher_id=:teacher_id";
+    try {
+        $db = getDB();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam('teacher_id', $teacher_id);
+        $stmt->execute();
+        $db = null;
+    } catch(PDOException $e) {
+        echo json_encode($e->getMessage());
+    }
+}
+
+function addUserClass($class,$user) {
     $sql = "UPDATE user SET class_id=:class WHERE id=:user";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam(':class', $class_id);
-        $stmt->bindParam(':user', $user_id);
+        $stmt->bindParam(':class', $class);
+        $stmt->bindParam(':user', $user);
         $stmt->execute();
-        if ($stmt->rowCount() == 1) {
-            echo getUserClass($class_id);
-        } else {
-            $output = array('id'=>null);
-            echo json_encode($output);     
-        }
         $db = null;
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
 }
 
-function removeUserClass() {
-    $app = \Slim\Slim::getInstance();
-    $user_id = $app->request()->post('user'); 
+function removeUserClass($user) {
     $sql = "UPDATE user SET class_id=:class WHERE id=:user";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
         $stmt->bindParam(':class', null);
-        $stmt->bindParam(':user', $user_id);
+        $stmt->bindParam(':user', $user);
         $stmt->execute();
-        if ($stmt->rowCount() == 1) {
-            $output = array('id'=>1);
-        } else {
-            $output = array('id'=>0);
-        }
         $db = null;
-        echo json_encode($output);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }

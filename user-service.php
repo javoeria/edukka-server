@@ -34,19 +34,19 @@ function getUser($id) {
     }
 }
 
-function getHistory($id) {
-    $sql = "SELECT * FROM student_game WHERE student_id=:id";
+function getUserActivity($student_id) {
+    $sql = "SELECT * FROM activity WHERE student_id=:student_id";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam(':id', $id);
+        $stmt->bindParam(':student_id', $student_id);
         $stmt->execute();
-        $history = $stmt->fetchAll(PDO::FETCH_OBJ);
-        if ($history == false) {
-            $history = array('student_id'=>null); 
+        $activity = $stmt->fetchAll(PDO::FETCH_OBJ);
+        if ($activity == false) {
+            $activity = array('student_id'=>null); 
         }
         $db = null;
-        echo json_encode($history);
+        echo json_encode($activity);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -66,8 +66,8 @@ function logIn() {
 	if ($user == false || !password_verify($password, $user->password)) {
             $user = array('id'=>null); 
         }
-        echo json_encode($user); 
         $db = null;
+        echo json_encode($user);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -80,6 +80,8 @@ function signUp() {
     $username = $app->request()->post('username');
     $password = $app->request()->post('password');
     $encrypt = password_hash($password, PASSWORD_DEFAULT);
+    $role = $app->request()->post('role');
+    $class_id = $app->request()->post('class_id');
     $sql1 = "SELECT count(*) FROM user WHERE username=:username";
     try {
         $db = getDB();
@@ -90,20 +92,17 @@ function signUp() {
             $output = array('id'=>null);
             echo json_encode($output);
         } else {
-            $sql2 = "INSERT INTO user (name,surname,username,password,score) VALUES (:name,:surname,:username,:password,0)";
+            $sql2 = "INSERT INTO user (name,surname,username,password,role,score,class_id) VALUES (:name,:surname,:username,:password,:role,0,:class_id)";
             $stmt2 = $db->prepare($sql2);
             $stmt2->bindParam(':name', $name);
             $stmt2->bindParam(':surname', $surname);
             $stmt2->bindParam(':username', $username);
             $stmt2->bindParam(':password', $encrypt);
+            $stmt2->bindParam(':role', $role);
+            $stmt2->bindParam(':class_id', $class_id);
             $stmt2->execute();
-            if ($stmt2->rowCount() == 1) {
-                $id = $db->lastInsertId();
-                echo getUser($id);
-            } else {
-                $output = array('id'=>null);
-                echo json_encode($output);
-            }
+            $id = $db->lastInsertId();
+            echo getUser($id);
         }
         $db = null;
     } catch(PDOException $e) {
@@ -118,7 +117,8 @@ function updateUser() {
     $surname = $app->request()->post('surname');
     $password = $app->request()->post('password');
     $encrypt = password_hash($password, PASSWORD_DEFAULT);
-    $sql = "UPDATE user SET name=:name,surname=:surname,password=:password WHERE id=:id";
+    $class_id = $app->request()->post('class_id');
+    $sql = "UPDATE user SET name=:name,surname=:surname,password=:password,class_id=:class_id WHERE id=:id";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
@@ -126,14 +126,10 @@ function updateUser() {
         $stmt->bindParam(':name', $name);
         $stmt->bindParam(':surname', $surname);
         $stmt->bindParam(':password', $encrypt);
+        $stmt->bindParam(':class_id', $class_id);
         $stmt->execute();
-        if ($stmt->rowCount() == 1) {
-            echo getUser($id);
-        } else {
-            $output = array('id'=>null);
-            echo json_encode($output);
-        }
         $db = null;
+        echo getUser($id);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -142,61 +138,54 @@ function updateUser() {
 function deleteUser() {
     $app = \Slim\Slim::getInstance();
     $id = $app->request()->post('id');
+    $role = $app->request()->post('role');
+    if ($role == 'teacher') {
+        deleteTeacherClass($id);
+        deleteTeacherGame($id);
+    } else {
+        deleteStudentActivity($id);
+    }
     $sql = "DELETE FROM user WHERE id=:id";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
         $stmt->bindParam('id', $id);
         $stmt->execute();
-        if ($stmt->rowCount() == 1) {
-            $output = array('id'=>1);
-        } else {
-            $output = array('id'=>0);
-        }
         $db = null;
-        echo json_encode($output);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
 }
 
-function createStudent() {
-    $app = \Slim\Slim::getInstance();
-    $user_id = $app->request()->post('user_id');
-    $sql = "INSERT INTO student (user_id) VALUES (:user_id)";
+function deleteStudentActivity($student_id) {
+    $sql = "DELETE FROM activity WHERE student_id=:student_id";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam(':user_id', $user_id);
+        $stmt->bindParam('student_id', $student_id);
         $stmt->execute();
-        if ($stmt->rowCount() == 1) {
-            $output = array('id'=>1);
-        } else {
-            $output = array('id'=>0);
-        }
         $db = null;
-        echo json_encode($output);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
 }
 
-function createTeacher() {
-    $app = \Slim\Slim::getInstance();
-    $user_id = $app->request()->post('user_id');
-    $sql = "INSERT INTO teacher (user_id) VALUES (:user_id)";
+function deleteTeacherGame($teacher_id) {
+    $sql = "SELECT * FROM game WHERE teacher_id=:teacher_id";
     try {
         $db = getDB();
-        $stmt = $db->prepare($sql);
-        $stmt->bindParam(':user_id', $user_id);
+        $stmt = $db->prepare($sql1);
+        $stmt->bindParam('teacher_id', $teacher_id);
         $stmt->execute();
-        if ($stmt->rowCount() == 1) {
-            $output = array('id'=>1);
-        } else {
-            $output = array('id'=>0);
+        $games = $stmt->fetchAll(PDO::FETCH_OBJ);
+        if ($games == true) {
+            $json = json_encode($games);
+            $array = json_decode($json, TRUE);
+            foreach ($array as $item) {
+                deleteGameBy($item['id']);
+            }
         }
         $db = null;
-        echo json_encode($output);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }

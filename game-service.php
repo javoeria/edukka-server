@@ -34,7 +34,7 @@ function getGame($id) {
     }
 }
 
-function getGameSubject($sub) {
+function getSubjectGames($sub) {
     $sql = "SELECT * FROM game WHERE subject=:sub";
     try {
         $db = getDB();
@@ -53,12 +53,12 @@ function getGameSubject($sub) {
 }
 
 function searchGames($sub,$str) {
-    $sql = "SELECT * FROM game WHERE subject=:sub AND title LIKE CONCAT('%',:str,'%')";
+    $sql = "SELECT * FROM game WHERE subject=:subject AND title LIKE CONCAT('%',:string,'%')";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam(':sub', $sub);
-        $stmt->bindParam(':str', $str);
+        $stmt->bindParam(':subject', $sub);
+        $stmt->bindParam(':string', $str);
         $stmt->execute();
         $games = $stmt->fetchAll(PDO::FETCH_OBJ);
         if ($games == false) {
@@ -78,7 +78,7 @@ function createGame() {
     $description = $app->request()->post('description');
     $difficulty = $app->request()->post('difficulty');
     $teacher_id = $app->request()->post('teacher_id');
-    $sql = "INSERT INTO game (subject,title,description,difficulty,rating,teacher_id) VALUES (:subject,:title,:description,:difficulty,0,:teacher_id)";
+    $sql = "INSERT INTO game (subject,title,description,difficulty,vote,teacher_id) VALUES (:subject,:title,:description,:difficulty,0,:teacher_id)";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
@@ -88,15 +88,9 @@ function createGame() {
         $stmt->bindParam(':difficulty', $difficulty);
         $stmt->bindParam(':teacher_id', $teacher_id);
         $stmt->execute();
-        if ($stmt->rowCount() == 1) {
-            $id = $db->lastInsertId();
-            echo getGame($id);
-        } else {
-            $output = array('id'=>null);
-            echo json_encode($output);
-        }
+        $id = $db->lastInsertId();
         $db = null;
-        echo json_encode($output);
+        echo getGame($id);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -119,14 +113,8 @@ function updateGame() {
         $stmt->bindParam(':description', $description);
         $stmt->bindParam(':difficulty', $difficulty);
         $stmt->execute();
-        if ($stmt->rowCount() == 1) {
-            echo getGame($id);
-        } else {
-            $output = array('id'=>null);
-            echo json_encode($output);
-        }
         $db = null;
-        echo json_encode($output);
+        echo getGame($id);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -135,19 +123,15 @@ function updateGame() {
 function deleteGame() {
     $app = \Slim\Slim::getInstance();
     $id = $app->request()->post('id');
+    deleteGameActivity($id);
+    deleteGameQuiz($id);
     $sql = "DELETE FROM game WHERE id=:id";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
         $stmt->bindParam('id', $id);
         $stmt->execute();
-        if ($stmt->rowCount() == 1) {
-            $output = array('id'=>1);
-        } else {
-            $output = array('id'=>0);
-        }
         $db = null;
-        echo json_encode($output);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -157,20 +141,16 @@ function finishGame() {
     $app = \Slim\Slim::getInstance();
     $student_id = $app->request()->post('student_id');
     $game_id = $app->request()->post('game_id');
-    $sql = "INSERT INTO student_game (student_id,game_id) VALUES (:student_id,:game_id)";
+    $result = $app->request()->post('result');
+    $sql = "INSERT INTO activity (student_id,game_id,result) VALUES (:student_id,:game_id,:result)";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
         $stmt->bindParam(':student_id', $student_id);
         $stmt->bindParam(':game_id', $game_id);
+        $stmt->bindParam(':result', $result);
         $stmt->execute();
-        if ($stmt->rowCount() == 1) {
-            $output = array('id'=>1);
-        } else {
-            $output = array('id'=>0);
-        }
         $db = null;
-        echo json_encode($output);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -179,19 +159,13 @@ function finishGame() {
 function upvoteGame() {
     $app = \Slim\Slim::getInstance();
     $id = $app->request()->post('id');
-    $sql = "UPDATE game SET rating=rating+1 WHERE id=:id";
+    $sql = "UPDATE game SET vote=vote+1 WHERE id=:id";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
         $stmt->bindParam(':id', $id);
         $stmt->execute();
-        if ($stmt->rowCount() == 1) {
-            $output = array('id'=>1);
-        } else {
-            $output = array('id'=>0);
-        }
         $db = null;
-        echo json_encode($output);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -200,19 +174,41 @@ function upvoteGame() {
 function downvoteGame() {
     $app = \Slim\Slim::getInstance();
     $id = $app->request()->post('id');
-    $sql = "UPDATE game SET rating=rating-1 WHERE id=:id";
+    $sql = "UPDATE game SET vote=vote-1 WHERE id=:id";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
         $stmt->bindParam(':id', $id);
         $stmt->execute();
-        if ($stmt->rowCount() == 1) {
-            $output = array('id'=>1);
-        } else {
-            $output = array('id'=>0);
-        }
         $db = null;
-        echo json_encode($output);
+    } catch(PDOException $e) {
+        echo json_encode($e->getMessage());
+    }
+}
+
+function deleteGameBy($id) {
+    deleteGameActivity($id);
+    deleteGameQuiz($id);
+    $sql = "DELETE FROM game WHERE id=:id";
+    try {
+        $db = getDB();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam('id', $id);
+        $stmt->execute();
+        $db = null;
+    } catch(PDOException $e) {
+        echo json_encode($e->getMessage());
+    }
+}
+
+function deleteGameActivity($game_id) {
+    $sql = "DELETE FROM activity WHERE game_id=:game_id";
+    try {
+        $db = getDB();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam('game_id', $game_id);
+        $stmt->execute();
+        $db = null;
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }

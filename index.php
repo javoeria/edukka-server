@@ -9,35 +9,32 @@ require_once 'quiz-service.php';
 
 $app = new \Slim\Slim();
 $app->contentType('application/json');
-$app->get('/', function () { echo "Hello World"; } );
-$app->post('/test', 'test');
+$app->get('/', function () { echo "Hello World " . phpversion(); } );
+$app->get('/test', 'test');
 
 // User Service
 $app->get('/users', 'getAllUsers');
 $app->get('/user/:id', 'getUser');
-$app->get('/history/:id', 'getHistory');
+$app->get('/activity/user/:id', 'getUserActivity');
 $app->post('/login', 'logIn');
 $app->post('/signup', 'signUp');
 $app->post('/edit/user', 'updateUser');
 $app->post('/delete/user', 'deleteUser');
-$app->post('/new/student', 'createStudent');
-$app->post('/new/teacher', 'createTeacher');
 
 // Class Service
 $app->get('/classes', 'getAllClasses');
 $app->get('/class/:id', 'getClass');
 $app->get('/myclass/:id', 'getUserClass');
+$app->get('/activity/class/:id', 'getClassActivity');
 $app->post('/new/class', 'createClass');
 $app->post('/edit/class', 'updateClass');
 $app->post('/delete/class', 'deleteClass');
-$app->post('/add', 'addUserClass');
-$app->post('/remove', 'removeUserClass');
 
 // Game Service
 $app->get('/games', 'getAllGames');
-$app->get('/games/:sub&:str', 'searchGames');
-$app->get('/games/:sub', 'getGameSubject');
 $app->get('/game/:id', 'getGame');
+$app->get('/games/:sub', 'getSubjectGames');
+$app->get('/games/:sub&:str', 'searchGames');
 $app->post('/new/game', 'createGame');
 $app->post('/edit/game', 'updateGame');
 $app->post('/delete/game', 'deleteGame');
@@ -48,7 +45,7 @@ $app->post('/downvote', 'downvoteGame');
 // Quiz Service
 $app->get('/quizzes', 'getAllQuizzes');
 $app->get('/quiz/:id', 'getQuiz');
-$app->get('/play/:id', 'getQuizGame');
+$app->get('/play/:id', 'getGameQuiz');
 $app->post('/new/quiz', 'createQuiz');
 $app->post('/edit/quiz', 'updateQuiz');
 $app->post('/delete/quiz', 'deleteQuiz');
