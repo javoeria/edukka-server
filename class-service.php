@@ -61,7 +61,7 @@ function getClassActivity($class_id) {
         $stmt1->execute();
         $users = $stmt1->fetchAll(PDO::FETCH_OBJ);
         if ($users == false) {
-            $activity = array('id'=>null); 
+            $activity = array('student_id'=>null,'game_id'=>null); 
         } else {
             $json = json_encode($users);
             $array = json_decode($json, TRUE);
@@ -70,7 +70,7 @@ function getClassActivity($class_id) {
             $stmt2->execute();
             $activity = $stmt2->fetchAll(PDO::FETCH_OBJ);
             if ($activity == false ) {
-                $activity = array('student_id'=>null); 
+                $activity = array('student_id'=>null,'game_id'=>null); 
             }
         }
         $db = null;
@@ -95,7 +95,7 @@ function createClass() {
         $stmt->execute();
         $id = $db->lastInsertId();
         $db = null;
-        addUserClass($id, $teacher_id);
+        addTeacherClass($id, $teacher_id);
         echo getClass($id);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
@@ -137,12 +137,41 @@ function deleteClass() {
     }
 }
 
-function deleteTeacherClass($teacher_id) {
-    $sql = "DELETE FROM class WHERE teacher_id=:teacher_id";
+function addUserClass() {
+    $app = \Slim\Slim::getInstance();
+    $id = $app->request()->post('id');
+    $class_id = $app->request()->post('class_id');
+    $sql1 = "SELECT count(*) FROM class WHERE id=:class_id";
+    try {
+        $db = getDB();
+        $stmt1 = $db->prepare($sql1);
+        $stmt1->bindParam(':class_id', $class_id);
+        $stmt1->execute();
+        if ($stmt1->fetchColumn() == 0) {
+            $output = array('id'=>null);
+            echo json_encode($output);
+        } else {
+            $sql2 = "UPDATE user SET class_id=:class_id WHERE id=:id";
+            $stmt2 = $db->prepare($sql2);
+            $stmt2->bindParam(':id', $id);
+            $stmt2->bindParam(':class_id', $class_id);
+            $stmt2->execute();
+            echo getClass($class_id);
+        }
+        $db = null;
+    } catch(PDOException $e) {
+        echo json_encode($e->getMessage());
+    }
+}
+
+function removeUserClass() {
+    $app = \Slim\Slim::getInstance();
+    $id = $app->request()->post('id');
+    $sql = "UPDATE user SET class_id=NULL WHERE id=:id";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam('teacher_id', $teacher_id);
+        $stmt->bindParam(':id', $id);
         $stmt->execute();
         $db = null;
     } catch(PDOException $e) {
@@ -150,27 +179,15 @@ function deleteTeacherClass($teacher_id) {
     }
 }
 
-function addUserClass($class,$user) {
-    $sql = "UPDATE user SET class_id=:class WHERE id=:user";
-    try {
-        $db = getDB();
-        $stmt = $db->prepare($sql);
-        $stmt->bindParam(':class', $class);
-        $stmt->bindParam(':user', $user);
-        $stmt->execute();
-        $db = null;
-    } catch(PDOException $e) {
-        echo json_encode($e->getMessage());
-    }
-}
+// Private Functions
 
-function removeUserClass($user) {
-    $sql = "UPDATE user SET class_id=:class WHERE id=:user";
+function addTeacherClass($class_id,$user_id) {
+    $sql = "UPDATE user SET class_id=:class_id WHERE id=:id";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam(':class', null);
-        $stmt->bindParam(':user', $user);
+        $stmt->bindParam(':class_id', $class_id);
+        $stmt->bindParam(':id', $user_id);
         $stmt->execute();
         $db = null;
     } catch(PDOException $e) {

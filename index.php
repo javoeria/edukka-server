@@ -15,40 +15,42 @@ $app->get('/test', 'test');
 // User Service
 $app->get('/users', 'getAllUsers');
 $app->get('/user/:id', 'getUser');
-$app->get('/activity/user/:id', 'getUserActivity');
+$app->get('/user/activity/:id', 'getUserActivity');
 $app->post('/login', 'logIn');
 $app->post('/signup', 'signUp');
-$app->post('/edit/user', 'updateUser');
-$app->post('/delete/user', 'deleteUser');
+$app->post('/user/edit', 'updateUser');
+$app->post('/user/delete', 'deleteUser');
 
 // Class Service
 $app->get('/classes', 'getAllClasses');
 $app->get('/class/:id', 'getClass');
 $app->get('/myclass/:id', 'getUserClass');
-$app->get('/activity/class/:id', 'getClassActivity');
-$app->post('/new/class', 'createClass');
-$app->post('/edit/class', 'updateClass');
-$app->post('/delete/class', 'deleteClass');
+$app->get('/class/activity/:id', 'getClassActivity');
+$app->post('/class/new', 'createClass');
+$app->post('/class/edit', 'updateClass');
+$app->post('/class/delete', 'deleteClass');
+$app->post('/class/adduser', 'addUserClass');
+$app->post('/class/remuser', 'removeUserClass');
 
 // Game Service
 $app->get('/games', 'getAllGames');
 $app->get('/game/:id', 'getGame');
 $app->get('/games/:sub', 'getSubjectGames');
-$app->get('/games/:sub&:str', 'searchGames');
-$app->post('/new/game', 'createGame');
-$app->post('/edit/game', 'updateGame');
-$app->post('/delete/game', 'deleteGame');
-$app->post('/finish', 'finishGame');
-$app->post('/upvote', 'upvoteGame');
-$app->post('/downvote', 'downvoteGame');
+$app->get('/games/:sub?:str', 'searchGames');
+$app->post('/game/new', 'createGame');
+$app->post('/game/edit', 'updateGame');
+$app->post('/game/delete', 'deleteGame');
+$app->post('/game/finish', 'finishGame');
+$app->post('/game/upvote', 'upvoteGame');
+$app->post('/game/downvote', 'downvoteGame');
 
 // Quiz Service
 $app->get('/quizzes', 'getAllQuizzes');
 $app->get('/quiz/:id', 'getQuiz');
 $app->get('/play/:id', 'getGameQuiz');
-$app->post('/new/quiz', 'createQuiz');
-$app->post('/edit/quiz', 'updateQuiz');
-$app->post('/delete/quiz', 'deleteQuiz');
+$app->post('/quiz/new', 'createQuiz');
+$app->post('/quiz/edit', 'updateQuiz');
+$app->post('/quiz/delete', 'deleteQuiz');
 
 $app->run();
 

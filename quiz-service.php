@@ -57,17 +57,17 @@ function createQuiz() {
     $type = $app->request()->post('type');
     $question = $app->request()->post('question');
     $answer = $app->request()->post('answer');
-    $option = $app->request()->post('option');
+    $options = $app->request()->post('options');
     $hint = $app->request()->post('hint');
     $game_id = $app->request()->post('game_id');
-    $sql = "INSERT INTO quiz (type,question,answer,option,hint,game_id) VALUES (:type,:question,:answer,:option,:hint,:game_id)";
+    $sql = "INSERT INTO quiz (type,question,answer,options,hint,game_id) VALUES (:type,:question,:answer,:options,:hint,:game_id)";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
         $stmt->bindParam(':type', $type);
         $stmt->bindParam(':question', $question);
         $stmt->bindParam(':answer', $answer);
-        $stmt->bindParam(':option', $option);
+        $stmt->bindParam(':options', $options);
         $stmt->bindParam(':hint', $hint);
         $stmt->bindParam(':game_id', $game_id);
         $stmt->execute();
@@ -85,9 +85,9 @@ function updateQuiz() {
     $type = $app->request()->post('type');
     $question = $app->request()->post('question');
     $answer = $app->request()->post('answer');
-    $option = $app->request()->post('option');
+    $options = $app->request()->post('options');
     $hint = $app->request()->post('hint');
-    $sql = "UPDATE quiz SET type=:type,question=:question,answer=:answer,option=:option,hint=:hint WHERE id=:id";
+    $sql = "UPDATE quiz SET type=:type,question=:question,answer=:answer,options=:options,hint=:hint WHERE id=:id";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
@@ -95,7 +95,7 @@ function updateQuiz() {
         $stmt->bindParam(':type', $type);
         $stmt->bindParam(':question', $question);
         $stmt->bindParam(':answer', $answer);
-        $stmt->bindParam(':option', $option);
+        $stmt->bindParam(':options', $options);
         $stmt->bindParam(':hint', $hint);
         $stmt->execute();
         $db = null;
@@ -113,19 +113,6 @@ function deleteQuiz() {
         $db = getDB();
         $stmt = $db->prepare($sql);
         $stmt->bindParam('id', $id);
-        $stmt->execute();
-        $db = null;
-    } catch(PDOException $e) {
-        echo json_encode($e->getMessage());
-    }
-}
-
-function deleteGameQuiz($game_id) {
-    $sql = "DELETE FROM quiz WHERE game_id=:game_id";
-    try {
-        $db = getDB();
-        $stmt = $db->prepare($sql);
-        $stmt->bindParam('game_id', $game_id);
         $stmt->execute();
         $db = null;
     } catch(PDOException $e) {

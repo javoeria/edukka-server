@@ -43,7 +43,7 @@ function getUserActivity($student_id) {
         $stmt->execute();
         $activity = $stmt->fetchAll(PDO::FETCH_OBJ);
         if ($activity == false) {
-            $activity = array('student_id'=>null); 
+            $activity = array('student_id'=>null,'game_id'=>null); 
         }
         $db = null;
         echo json_encode($activity);
@@ -117,8 +117,7 @@ function updateUser() {
     $surname = $app->request()->post('surname');
     $password = $app->request()->post('password');
     $encrypt = password_hash($password, PASSWORD_DEFAULT);
-    $class_id = $app->request()->post('class_id');
-    $sql = "UPDATE user SET name=:name,surname=:surname,password=:password,class_id=:class_id WHERE id=:id";
+    $sql = "UPDATE user SET name=:name,surname=:surname,password=:password WHERE id=:id";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
@@ -126,7 +125,6 @@ function updateUser() {
         $stmt->bindParam(':name', $name);
         $stmt->bindParam(':surname', $surname);
         $stmt->bindParam(':password', $encrypt);
-        $stmt->bindParam(':class_id', $class_id);
         $stmt->execute();
         $db = null;
         echo getUser($id);
@@ -157,12 +155,14 @@ function deleteUser() {
     }
 }
 
-function deleteStudentActivity($student_id) {
-    $sql = "DELETE FROM activity WHERE student_id=:student_id";
+// Private Functions 
+
+function deleteTeacherClass($teacher_id) {
+    $sql = "DELETE FROM class WHERE teacher_id=:teacher_id";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam('student_id', $student_id);
+        $stmt->bindParam('teacher_id', $teacher_id);
         $stmt->execute();
         $db = null;
     } catch(PDOException $e) {
@@ -185,6 +185,34 @@ function deleteTeacherGame($teacher_id) {
                 deleteGameBy($item['id']);
             }
         }
+        $db = null;
+    } catch(PDOException $e) {
+        echo json_encode($e->getMessage());
+    }
+}
+
+function deleteGameBy($id) {
+    deleteGameActivity($id);
+    deleteGameQuiz($id);
+    $sql = "DELETE FROM game WHERE id=:id";
+    try {
+        $db = getDB();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam('id', $id);
+        $stmt->execute();
+        $db = null;
+    } catch(PDOException $e) {
+        echo json_encode($e->getMessage());
+    }
+}
+
+function deleteStudentActivity($student_id) {
+    $sql = "DELETE FROM activity WHERE student_id=:student_id";
+    try {
+        $db = getDB();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam('student_id', $student_id);
+        $stmt->execute();
         $db = null;
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());

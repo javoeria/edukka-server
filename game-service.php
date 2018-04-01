@@ -34,12 +34,12 @@ function getGame($id) {
     }
 }
 
-function getSubjectGames($sub) {
-    $sql = "SELECT * FROM game WHERE subject=:sub";
+function getSubjectGames($subject) {
+    $sql = "SELECT * FROM game WHERE subject=:subject";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam(':sub', $sub);
+        $stmt->bindParam(':subject', $subject);
         $stmt->execute();
         $games = $stmt->fetchAll(PDO::FETCH_OBJ);
         if ($games == false) {
@@ -52,13 +52,13 @@ function getSubjectGames($sub) {
     }
 }
 
-function searchGames($sub,$str) {
+function searchGames($subject,$string) {
     $sql = "SELECT * FROM game WHERE subject=:subject AND title LIKE CONCAT('%',:string,'%')";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam(':subject', $sub);
-        $stmt->bindParam(':string', $str);
+        $stmt->bindParam(':subject', $subject);
+        $stmt->bindParam(':string', $string);
         $stmt->execute();
         $games = $stmt->fetchAll(PDO::FETCH_OBJ);
         if ($games == false) {
@@ -103,7 +103,7 @@ function updateGame() {
     $title = $app->request()->post('title');
     $description = $app->request()->post('description');
     $difficulty = $app->request()->post('difficulty');
-    $sql = "UPDATE game SET subject=:subject,title=:title,description:description,difficulty=:difficulty WHERE id=:id";
+    $sql = "UPDATE game SET subject=:subject,title=:title,description=:description,difficulty=:difficulty WHERE id=:id";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
@@ -151,6 +151,7 @@ function finishGame() {
         $stmt->bindParam(':result', $result);
         $stmt->execute();
         $db = null;
+        echo getActivity($student_id,$game_id);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -166,6 +167,7 @@ function upvoteGame() {
         $stmt->bindParam(':id', $id);
         $stmt->execute();
         $db = null;
+        echo getGame($id);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
@@ -181,25 +183,13 @@ function downvoteGame() {
         $stmt->bindParam(':id', $id);
         $stmt->execute();
         $db = null;
+        echo getGame($id);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
 }
 
-function deleteGameBy($id) {
-    deleteGameActivity($id);
-    deleteGameQuiz($id);
-    $sql = "DELETE FROM game WHERE id=:id";
-    try {
-        $db = getDB();
-        $stmt = $db->prepare($sql);
-        $stmt->bindParam('id', $id);
-        $stmt->execute();
-        $db = null;
-    } catch(PDOException $e) {
-        echo json_encode($e->getMessage());
-    }
-}
+// Private Functions
 
 function deleteGameActivity($game_id) {
     $sql = "DELETE FROM activity WHERE game_id=:game_id";
@@ -209,6 +199,38 @@ function deleteGameActivity($game_id) {
         $stmt->bindParam('game_id', $game_id);
         $stmt->execute();
         $db = null;
+    } catch(PDOException $e) {
+        echo json_encode($e->getMessage());
+    }
+}
+
+function deleteGameQuiz($game_id) {
+    $sql = "DELETE FROM quiz WHERE game_id=:game_id";
+    try {
+        $db = getDB();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam('game_id', $game_id);
+        $stmt->execute();
+        $db = null;
+    } catch(PDOException $e) {
+        echo json_encode($e->getMessage());
+    }
+}
+
+function getActivity($student_id,$game_id) {
+    $sql = "SELECT * FROM activity WHERE student_id=:student_id AND game_id=:game_id";
+    try {
+        $db = getDB();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':student_id', $student_id);
+        $stmt->bindParam(':game_id', $game_id);
+        $stmt->execute();
+        $activity = $stmt->fetchObject();
+        if ($activity == false) {
+            $activity = array('student_id'=>null,'game_id'=>null); 
+        }
+        $db = null;
+        echo json_encode($activity);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
