@@ -1,6 +1,6 @@
 <?php
 
-require 'C:\wamp64\www\edukka\Slim\Slim.php';
+require 'C:\wamp64\www\edukka\Slim\Slim.php'; //require '.././Slim/Slim.php';
 require_once 'user-service.php';
 require_once 'class-service.php';
 require_once 'game-service.php';
@@ -9,7 +9,7 @@ require_once 'quiz-service.php';
 
 $app = new \Slim\Slim();
 $app->contentType('application/json');
-$app->get('/', function () { echo "Hello World " . phpversion(); } );
+$app->get('/', function () { echo "Edukka Server " . phpversion(); } );
 $app->get('/test', 'test');
 
 // User Service
@@ -58,9 +58,9 @@ function test() {}
 
 function getDB() {
     $dbhost = "localhost";
-    $dbuser = "root";
-    $dbpass = "";
-    $dbname = "server";
+    $dbuser = "root";       //$dbuser = "id5255892_root";
+    $dbpass = "";           //$dbpass = "k4zGDiZJ6EqCKnkDOhAH";
+    $dbname = "edukka";     //$dbname = "id5255892_edukka";
 
     $mysql_conn_string = "mysql:host=$dbhost;dbname=$dbname";
     $dbConnection = new PDO($mysql_conn_string, $dbuser, $dbpass);
