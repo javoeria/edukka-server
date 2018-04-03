@@ -1,13 +1,13 @@
 <?php
 
 function getAllGames() {
-    $sql = "SELECT * FROM game";
+    $sql = 'SELECT * FROM game';
     try {
         $db = getDB();
         $stmt = $db->query($sql);
         $games = $stmt->fetchAll(PDO::FETCH_OBJ);
-        if ($games == false) {
-            $games = array('id'=>null);
+        if ($games === []) {
+            $games = ['id'=>null];
         }
         $db = null;
         echo json_encode($games);
@@ -17,15 +17,15 @@ function getAllGames() {
 }
 
 function getGame($id) {
-    $sql = "SELECT * FROM game WHERE id=:id";
+    $sql = 'SELECT * FROM game WHERE id = ?';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam(':id', $id);
+        $stmt->bindValue(1, $id);
         $stmt->execute();
         $game = $stmt->fetchObject();
-        if ($game == false) {
-            $game = array('id'=>null); 
+        if ($game === false) {
+            $game = ['id'=>null]; 
         }
         $db = null;
         echo json_encode($game);
@@ -35,15 +35,15 @@ function getGame($id) {
 }
 
 function getSubjectGames($subject) {
-    $sql = "SELECT * FROM game WHERE subject=:subject";
+    $sql = 'SELECT * FROM game WHERE subject = ?';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam(':subject', $subject);
+        $stmt->bindValue(1, $subject);
         $stmt->execute();
         $games = $stmt->fetchAll(PDO::FETCH_OBJ);
-        if ($games == false) {
-            $games = array('id'=>null); 
+        if ($games === []) {
+            $games = ['id'=>null]; 
         }
         $db = null;
         echo json_encode($games);
@@ -52,17 +52,17 @@ function getSubjectGames($subject) {
     }
 }
 
-function searchGames($subject,$string) {
-    $sql = "SELECT * FROM game WHERE subject=:subject AND title LIKE CONCAT('%',:string,'%')";
+function searchGames($subject, $string) {
+    $sql = 'SELECT * FROM game WHERE subject = ? AND title LIKE ?';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam(':subject', $subject);
-        $stmt->bindParam(':string', $string);
+        $stmt->bindValue(1, $subject);
+        $stmt->bindValue(2, concat('%', $string, '%'));
         $stmt->execute();
         $games = $stmt->fetchAll(PDO::FETCH_OBJ);
-        if ($games == false) {
-            $games = array('id'=>null); 
+        if ($games === []) {
+            $games = ['id'=>null]; 
         }
         $db = null;
         echo json_encode($games);
@@ -78,15 +78,15 @@ function createGame() {
     $description = $app->request()->post('description');
     $difficulty = $app->request()->post('difficulty');
     $teacher_id = $app->request()->post('teacher_id');
-    $sql = "INSERT INTO game (subject,title,description,difficulty,vote,teacher_id) VALUES (:subject,:title,:description,:difficulty,0,:teacher_id)";
+    $sql = 'INSERT INTO game (subject, title, description, difficulty, vote, teacher_id) VALUES (?, ?, ?, ?, 0, ?)';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam(':subject', $subject);
-        $stmt->bindParam(':title', $title);
-        $stmt->bindParam(':description', $description);
-        $stmt->bindParam(':difficulty', $difficulty);
-        $stmt->bindParam(':teacher_id', $teacher_id);
+        $stmt->bindValue(1, $subject);
+        $stmt->bindValue(2, $title);
+        $stmt->bindValue(3, $description);
+        $stmt->bindValue(4, $difficulty);
+        $stmt->bindValue(5, $teacher_id);
         $stmt->execute();
         $id = $db->lastInsertId();
         $db = null;
@@ -98,20 +98,20 @@ function createGame() {
 
 function updateGame() {
     $app = \Slim\Slim::getInstance();
-    $id = $app->request()->post('id');
     $subject = $app->request()->post('subject');
     $title = $app->request()->post('title');
     $description = $app->request()->post('description');
     $difficulty = $app->request()->post('difficulty');
-    $sql = "UPDATE game SET subject=:subject,title=:title,description=:description,difficulty=:difficulty WHERE id=:id";
+    $id = $app->request()->post('id');
+    $sql = 'UPDATE game SET subject = ?, title = ?, description = ?, difficulty = ? WHERE id = ?';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam(':id', $id);
-        $stmt->bindParam(':subject', $subject);
-        $stmt->bindParam(':title', $title);
-        $stmt->bindParam(':description', $description);
-        $stmt->bindParam(':difficulty', $difficulty);
+        $stmt->bindValue(1, $subject);
+        $stmt->bindValue(2, $title);
+        $stmt->bindValue(3, $description);
+        $stmt->bindValue(4, $difficulty);
+        $stmt->bindValue(5, $id);
         $stmt->execute();
         $db = null;
         echo getGame($id);
@@ -125,11 +125,11 @@ function deleteGame() {
     $id = $app->request()->post('id');
     deleteGameActivity($id);
     deleteGameQuiz($id);
-    $sql = "DELETE FROM game WHERE id=:id";
+    $sql = 'DELETE FROM game WHERE id = ?';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam('id', $id);
+        $stmt->bindValue(1, $id);
         $stmt->execute();
         $db = null;
     } catch(PDOException $e) {
@@ -142,13 +142,13 @@ function finishGame() {
     $student_id = $app->request()->post('student_id');
     $game_id = $app->request()->post('game_id');
     $result = $app->request()->post('result');
-    $sql = "INSERT INTO activity (student_id,game_id,result) VALUES (:student_id,:game_id,:result)";
+    $sql = 'INSERT INTO activity (student_id, game_id, result) VALUES (?, ?, ?)';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam(':student_id', $student_id);
-        $stmt->bindParam(':game_id', $game_id);
-        $stmt->bindParam(':result', $result);
+        $stmt->bindValue(1, $student_id);
+        $stmt->bindValue(2, $game_id);
+        $stmt->bindValue(3, $result);
         $stmt->execute();
         $db = null;
         echo getActivity($student_id,$game_id);
@@ -160,11 +160,11 @@ function finishGame() {
 function upvoteGame() {
     $app = \Slim\Slim::getInstance();
     $id = $app->request()->post('id');
-    $sql = "UPDATE game SET vote=vote+1 WHERE id=:id";
+    $sql = 'UPDATE game SET vote = vote+1 WHERE id = ?';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam(':id', $id);
+        $stmt->bindValue(1, $id);
         $stmt->execute();
         $db = null;
         echo getGame($id);
@@ -176,11 +176,11 @@ function upvoteGame() {
 function downvoteGame() {
     $app = \Slim\Slim::getInstance();
     $id = $app->request()->post('id');
-    $sql = "UPDATE game SET vote=vote-1 WHERE id=:id";
+    $sql = 'UPDATE game SET vote = vote-1 WHERE id = ?';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam(':id', $id);
+        $stmt->bindValue(1, $id);
         $stmt->execute();
         $db = null;
         echo getGame($id);
@@ -192,11 +192,11 @@ function downvoteGame() {
 // Private Functions
 
 function deleteGameActivity($game_id) {
-    $sql = "DELETE FROM activity WHERE game_id=:game_id";
+    $sql = 'DELETE FROM activity WHERE game_id = ?';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam('game_id', $game_id);
+        $stmt->bindValue(1, $game_id);
         $stmt->execute();
         $db = null;
     } catch(PDOException $e) {
@@ -205,11 +205,11 @@ function deleteGameActivity($game_id) {
 }
 
 function deleteGameQuiz($game_id) {
-    $sql = "DELETE FROM quiz WHERE game_id=:game_id";
+    $sql = 'DELETE FROM quiz WHERE game_id = ?';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam('game_id', $game_id);
+        $stmt->bindValue(1, $game_id);
         $stmt->execute();
         $db = null;
     } catch(PDOException $e) {
@@ -217,17 +217,17 @@ function deleteGameQuiz($game_id) {
     }
 }
 
-function getActivity($student_id,$game_id) {
-    $sql = "SELECT * FROM activity WHERE student_id=:student_id AND game_id=:game_id";
+function getActivity($student_id, $game_id) {
+    $sql = 'SELECT * FROM activity WHERE student_id = ? AND game_id = ?';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam(':student_id', $student_id);
-        $stmt->bindParam(':game_id', $game_id);
+        $stmt->bindValue(1, $student_id);
+        $stmt->bindValue(2, $game_id);
         $stmt->execute();
         $activity = $stmt->fetchObject();
-        if ($activity == false) {
-            $activity = array('student_id'=>null,'game_id'=>null); 
+        if ($activity === false) {
+            $activity = ['student_id'=>null,'game_id'=>null]; 
         }
         $db = null;
         echo json_encode($activity);
