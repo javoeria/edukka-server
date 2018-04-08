@@ -7,7 +7,7 @@ function getAllUsers() {
         $stmt = $db->query($sql);
         $users = $stmt->fetchAll(PDO::FETCH_OBJ);
         if ($users === []) {
-            $users = ['id'=>null];
+            $users = [['id'=>null]];
         }
         $db = null;
         echo json_encode($users);
@@ -43,7 +43,7 @@ function getUserActivity($student_id) {
         $stmt->execute();
         $activity = $stmt->fetchAll(PDO::FETCH_OBJ);
         if ($activity === []) {
-            $activity = ['student_id'=>null, 'game_id'=>null]; 
+            $activity = [['student_id'=>null, 'game_id'=>null]]; 
         }
         $db = null;
         echo json_encode($activity);
@@ -79,9 +79,9 @@ function signUp() {
     $surname = $app->request()->post('surname');
     $username = $app->request()->post('username');
     $password = $app->request()->post('password');
-    $encrypt = password_hash($password, PASSWORD_DEFAULT);
     $role = $app->request()->post('role');
     $class_id = $app->request()->post('class_id');
+    $encrypt = password_hash($password, PASSWORD_DEFAULT);
     $sql1 = 'SELECT count(*) FROM user WHERE username = ?';
     try {
         $db = getDB();
@@ -112,10 +112,10 @@ function signUp() {
 
 function updateUser() {
     $app = \Slim\Slim::getInstance();
-    $id = $app->request()->post('id');
     $name = $app->request()->post('name');
     $surname = $app->request()->post('surname');
     $password = $app->request()->post('password');
+    $id = $app->request()->post('id');
     $encrypt = password_hash($password, PASSWORD_DEFAULT);
     $sql = 'UPDATE user SET name = ?, surname = ?, password = ? WHERE id = ?';
     try {

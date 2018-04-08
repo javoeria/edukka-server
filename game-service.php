@@ -7,7 +7,7 @@ function getAllGames() {
         $stmt = $db->query($sql);
         $games = $stmt->fetchAll(PDO::FETCH_OBJ);
         if ($games === []) {
-            $games = ['id'=>null];
+            $games = [['id'=>null]];
         }
         $db = null;
         echo json_encode($games);
@@ -43,7 +43,7 @@ function getSubjectGames($subject) {
         $stmt->execute();
         $games = $stmt->fetchAll(PDO::FETCH_OBJ);
         if ($games === []) {
-            $games = ['id'=>null]; 
+            $games = [['id'=>null]]; 
         }
         $db = null;
         echo json_encode($games);
@@ -62,7 +62,7 @@ function searchGames($subject, $string) {
         $stmt->execute();
         $games = $stmt->fetchAll(PDO::FETCH_OBJ);
         if ($games === []) {
-            $games = ['id'=>null]; 
+            $games = [['id'=>null]]; 
         }
         $db = null;
         echo json_encode($games);

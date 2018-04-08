@@ -7,7 +7,7 @@ function getAllClasses() {
         $stmt = $db->query($sql);
         $classes = $stmt->fetchAll(PDO::FETCH_OBJ);
         if ($classes === []) {
-            $classes = ['id'=>null];
+            $classes = [['id'=>null]];
         }
         $db = null;
         echo json_encode($classes);
@@ -43,7 +43,7 @@ function getUserClass($class_id) {
         $stmt->execute();
         $users = $stmt->fetchAll(PDO::FETCH_OBJ);
         if ($users === []) {
-            $users = ['id'=>null]; 
+            $users = [['id'=>null]]; 
         }
         $db = null;
         echo json_encode($users);
@@ -61,7 +61,7 @@ function getClassActivity($class_id) {
         $stmt1->execute();
         $users = $stmt1->fetchAll(PDO::FETCH_OBJ);
         if ($users === []) {
-            $activity = ['student_id'=>null, 'game_id'=>null]; 
+            $activity = [['student_id'=>null, 'game_id'=>null]]; 
         } else {
             $json = json_encode($users);
             $array = json_decode($json, TRUE);
@@ -70,7 +70,7 @@ function getClassActivity($class_id) {
             $stmt2->execute();
             $activity = $stmt2->fetchAll(PDO::FETCH_OBJ);
             if ($activity === []) {
-                $activity = ['student_id'=>null, 'game_id'=>null]; 
+                $activity = [['student_id'=>null, 'game_id'=>null]]; 
             }
         }
         $db = null;

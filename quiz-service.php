@@ -7,7 +7,7 @@ function getAllQuizzes() {
         $stmt = $db->query($sql);
         $quizzes = $stmt->fetchAll(PDO::FETCH_OBJ);
         if ($quizzes === []) {
-            $quizzes = ['id'=>null];
+            $quizzes = [['id'=>null]];
         }
         $db = null;
         echo json_encode($quizzes);
@@ -43,7 +43,7 @@ function getGameQuiz($game_id) {
         $stmt->execute();
         $quizzes = $stmt->fetchAll(PDO::FETCH_OBJ);
         if ($quizzes === []) {
-            $quizzes = ['id'=>null];
+            $quizzes = [['id'=>null]];
         }
         $db = null;
         echo json_encode($quizzes);

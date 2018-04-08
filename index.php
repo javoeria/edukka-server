@@ -9,7 +9,11 @@ require_once 'quiz-service.php';
 
 $app = new \Slim\Slim();
 $app->contentType('application/json');
-$app->get('/', function () { echo 'Edukka Server ' . phpversion(); } );
+
+$app->get('/', function () use ($app) {
+    $app->contentType('text/plain');
+    echo 'Edukka Server ' . phpversion(); 
+});
 
 // User Service
 $app->get('/users', 'getAllUsers');
