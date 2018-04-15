@@ -76,12 +76,15 @@ function logIn() {
 function signUp() {
     $app = \Slim\Slim::getInstance();
     $name = $app->request()->post('name');
-    $surname = $app->request()->post('surname');
     $username = $app->request()->post('username');
     $password = $app->request()->post('password');
     $role = $app->request()->post('role');
+    $image = $app->request()->post('image');
     $class_id = $app->request()->post('class_id');
     $encrypt = password_hash($password, PASSWORD_DEFAULT);
+    if ($class_id === '0') {
+        $class_id = null;
+    }
     $sql1 = 'SELECT count(*) FROM user WHERE username = ?';
     try {
         $db = getDB();
@@ -92,13 +95,13 @@ function signUp() {
             $output = ['id'=>null];
             echo json_encode($output);
         } else {
-            $sql2 = 'INSERT INTO user (name, surname, username, password, role, score, class_id) VALUES (?, ?, ?, ?, ?, 0, ?)';
+            $sql2 = 'INSERT INTO user (name, username, password, role, image, score, class_id) VALUES (?, ?, ?, ?, ?, 0, ?)';
             $stmt2 = $db->prepare($sql2);
             $stmt2->bindValue(1, $name);
-            $stmt2->bindValue(2, $surname);
-            $stmt2->bindValue(3, $username);
-            $stmt2->bindValue(4, $encrypt);
-            $stmt2->bindValue(5, $role);
+            $stmt2->bindValue(2, $username);
+            $stmt2->bindValue(3, $encrypt);
+            $stmt2->bindValue(4, $role);
+            $stmt2->bindValue(5, $image);
             $stmt2->bindValue(6, $class_id);
             $stmt2->execute();
             $id = $db->lastInsertId();
@@ -113,17 +116,17 @@ function signUp() {
 function updateUser() {
     $app = \Slim\Slim::getInstance();
     $name = $app->request()->post('name');
-    $surname = $app->request()->post('surname');
     $password = $app->request()->post('password');
+    $image = $app->request()->post('image');
     $id = $app->request()->post('id');
     $encrypt = password_hash($password, PASSWORD_DEFAULT);
-    $sql = 'UPDATE user SET name = ?, surname = ?, password = ? WHERE id = ?';
+    $sql = 'UPDATE user SET name = ?, password = ?, image = ? WHERE id = ?';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
         $stmt->bindValue(1, $name);
-        $stmt->bindValue(2, $surname);
-        $stmt->bindValue(3, $encrypt);
+        $stmt->bindValue(2, $encrypt);
+        $stmt->bindValue(3, $image);
         $stmt->bindValue(4, $id);
         $stmt->execute();
         $db = null;
