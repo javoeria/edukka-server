@@ -98,20 +98,18 @@ function createGame() {
 
 function updateGame() {
     $app = \Slim\Slim::getInstance();
-    $subject = $app->request()->post('subject');
     $title = $app->request()->post('title');
     $description = $app->request()->post('description');
     $difficulty = $app->request()->post('difficulty');
     $id = $app->request()->post('id');
-    $sql = 'UPDATE game SET subject = ?, title = ?, description = ?, difficulty = ? WHERE id = ?';
+    $sql = 'UPDATE game SET title = ?, description = ?, difficulty = ? WHERE id = ?';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindValue(1, $subject);
-        $stmt->bindValue(2, $title);
-        $stmt->bindValue(3, $description);
-        $stmt->bindValue(4, $difficulty);
-        $stmt->bindValue(5, $id);
+        $stmt->bindValue(1, $title);
+        $stmt->bindValue(2, $description);
+        $stmt->bindValue(3, $difficulty);
+        $stmt->bindValue(4, $id);
         $stmt->execute();
         $db = null;
         echo getGame($id);
@@ -141,14 +139,18 @@ function finishGame() {
     $app = \Slim\Slim::getInstance();
     $student_id = $app->request()->post('student_id');
     $game_id = $app->request()->post('game_id');
+    $subject = $app->request()->post('subject');
     $result = $app->request()->post('result');
-    $sql = 'INSERT INTO activity (student_id, game_id, result) VALUES (?, ?, ?)';
+    $date = date("d-m-Y");
+    $sql = 'INSERT INTO activity (student_id, game_id, subject, result, date) VALUES (?, ?, ?, ?, ?)';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
         $stmt->bindValue(1, $student_id);
         $stmt->bindValue(2, $game_id);
-        $stmt->bindValue(3, $result);
+        $stmt->bindValue(3, $subject);
+        $stmt->bindValue(4, $result);
+        $stmt->bindValue(5, $date);
         $stmt->execute();
         $db = null;
         echo getActivity($student_id,$game_id);

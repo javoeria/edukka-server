@@ -1,7 +1,7 @@
 <?php
 
 function getAllUsers() {
-    $sql = 'SELECT * FROM user';
+    $sql = 'SELECT * FROM user ORDER BY role, score DESC';
     try {
         $db = getDB();
         $stmt = $db->query($sql);
@@ -35,7 +35,7 @@ function getUser($id) {
 }
 
 function getUserActivity($student_id) {
-    $sql = 'SELECT * FROM activity WHERE student_id = ?';
+    $sql = "SELECT * FROM activity WHERE student_id = ? ORDER BY str_to_date(date,'%d-%m-%Y') DESC";
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
@@ -81,29 +81,30 @@ function signUp() {
     $role = $app->request()->post('role');
     $image = $app->request()->post('image');
     $class_id = $app->request()->post('class_id');
-    $encrypt = password_hash($password, PASSWORD_DEFAULT);
-    if ($class_id === '0') {
-        $class_id = null;
-    }
     $sql1 = 'SELECT count(*) FROM user WHERE username = ?';
+    $sql2 = 'SELECT count(*) FROM class WHERE id = ?';
     try {
         $db = getDB();
         $stmt1 = $db->prepare($sql1);
         $stmt1->bindValue(1, $username);
         $stmt1->execute();
-        if ($stmt1->fetchColumn() > 0) {
+        $stmt2 = $db->prepare($sql2);
+        $stmt2->bindValue(1, $class_id);
+        $stmt2->execute();
+        if ($stmt1->fetchColumn()>0 || $stmt2->fetchColumn() === '0') {
             $output = ['id'=>null];
             echo json_encode($output);
         } else {
-            $sql2 = 'INSERT INTO user (name, username, password, role, image, score, class_id) VALUES (?, ?, ?, ?, ?, 0, ?)';
-            $stmt2 = $db->prepare($sql2);
-            $stmt2->bindValue(1, $name);
-            $stmt2->bindValue(2, $username);
-            $stmt2->bindValue(3, $encrypt);
-            $stmt2->bindValue(4, $role);
-            $stmt2->bindValue(5, $image);
-            $stmt2->bindValue(6, $class_id);
-            $stmt2->execute();
+            $sql = 'INSERT INTO user (name, username, password, role, image, score, class_id) VALUES (?, ?, ?, ?, ?, 0, ?)';
+            $encrypt = password_hash($password, PASSWORD_DEFAULT);
+            $stmt = $db->prepare($sql);
+            $stmt->bindValue(1, $name);
+            $stmt->bindValue(2, $username);
+            $stmt->bindValue(3, $encrypt);
+            $stmt->bindValue(4, $role);
+            $stmt->bindValue(5, $image);
+            $stmt->bindValue(6, $class_id);
+            $stmt->execute();
             $id = $db->lastInsertId();
             echo getUser($id);
         }
@@ -118,19 +119,40 @@ function updateUser() {
     $name = $app->request()->post('name');
     $password = $app->request()->post('password');
     $image = $app->request()->post('image');
+    $class_id = $app->request()->post('class_id');
     $id = $app->request()->post('id');
-    $encrypt = password_hash($password, PASSWORD_DEFAULT);
-    $sql = 'UPDATE user SET name = ?, password = ?, image = ? WHERE id = ?';
+    $sql = 'SELECT count(*) FROM class WHERE id = ?';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindValue(1, $name);
-        $stmt->bindValue(2, $encrypt);
-        $stmt->bindValue(3, $image);
-        $stmt->bindValue(4, $id);
+        $stmt->bindValue(1, $class_id);
         $stmt->execute();
+        if ($stmt->fetchColumn() === '0') {
+            $output = ['id'=>null];
+            echo json_encode($output);
+        } else {
+            $sql1 = 'UPDATE user SET name = ?, image = ?, class_id = ? WHERE id = ?';
+            $sql2 = 'UPDATE user SET name = ?, password = ?, image = ?, class_id = ? WHERE id = ?';
+            if ($password === '') {
+                $stmt1 = $db->prepare($sql1);
+                $stmt1->bindValue(1, $name);
+                $stmt1->bindValue(2, $image);
+                $stmt1->bindValue(3, $class_id);
+                $stmt1->bindValue(4, $id);
+                $stmt1->execute();
+            } else {
+                $encrypt = password_hash($password, PASSWORD_DEFAULT);
+                $stmt2 = $db->prepare($sql2);
+                $stmt2->bindValue(1, $name);
+                $stmt2->bindValue(2, $encrypt);
+                $stmt2->bindValue(3, $image);
+                $stmt2->bindValue(4, $class_id);
+                $stmt2->bindValue(5, $id);
+                $stmt2->execute();
+            }
+            echo getUser($id);
+        }
         $db = null;
-        echo getUser($id);
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
     }
