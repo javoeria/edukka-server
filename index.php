@@ -39,7 +39,6 @@ $app->post('/class/remuser', 'removeUserClass');
 $app->get('/games', 'getAllGames');
 $app->get('/game/:id', 'getGame');
 $app->get('/games/:sub', 'getSubjectGames');
-$app->get('/games/:sub?:str', 'searchGames');
 $app->post('/game/new', 'createGame');
 $app->post('/game/edit', 'updateGame');
 $app->post('/game/delete', 'deleteGame');

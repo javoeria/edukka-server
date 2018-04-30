@@ -91,9 +91,12 @@ function signUp() {
         $stmt2 = $db->prepare($sql2);
         $stmt2->bindValue(1, $class_id);
         $stmt2->execute();
-        if ($stmt1->fetchColumn()>0 || $stmt2->fetchColumn() === '0') {
-            $output = ['id'=>null];
+        if ($stmt1->fetchColumn() > 0) {
+            $output = ['id'=>null, 'name'=>'username'];
             echo json_encode($output);
+        } else if ($stmt2->fetchColumn() === '0') {
+            $output = ['id'=>null, 'name'=>'class'];
+            echo json_encode($output); 
         } else {
             $sql = 'INSERT INTO user (name, username, password, role, image, score, class_id) VALUES (?, ?, ?, ?, ?, 0, ?)';
             $encrypt = password_hash($password, PASSWORD_DEFAULT);
@@ -117,36 +120,37 @@ function signUp() {
 function updateUser() {
     $app = \Slim\Slim::getInstance();
     $name = $app->request()->post('name');
+    $username = $app->request()->post('username');
     $password = $app->request()->post('password');
     $image = $app->request()->post('image');
-    $class_id = $app->request()->post('class_id');
     $id = $app->request()->post('id');
-    $sql = 'SELECT count(*) FROM class WHERE id = ?';
+    $sql = 'SELECT * FROM user WHERE username = ?';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindValue(1, $class_id);
+        $stmt->bindValue(1, $username);
         $stmt->execute();
-        if ($stmt->fetchColumn() === '0') {
+        $user = $stmt->fetchObject();
+        if ($user != false && $user->id != $id) {
             $output = ['id'=>null];
             echo json_encode($output);
         } else {
-            $sql1 = 'UPDATE user SET name = ?, image = ?, class_id = ? WHERE id = ?';
-            $sql2 = 'UPDATE user SET name = ?, password = ?, image = ?, class_id = ? WHERE id = ?';
+            $sql1 = 'UPDATE user SET name = ?, username = ?, image = ? WHERE id = ?';
+            $sql2 = 'UPDATE user SET name = ?, username = ?, password = ?, image = ? WHERE id = ?';
             if ($password === '') {
                 $stmt1 = $db->prepare($sql1);
                 $stmt1->bindValue(1, $name);
-                $stmt1->bindValue(2, $image);
-                $stmt1->bindValue(3, $class_id);
+                $stmt1->bindValue(2, $username);
+                $stmt1->bindValue(3, $image);
                 $stmt1->bindValue(4, $id);
                 $stmt1->execute();
             } else {
                 $encrypt = password_hash($password, PASSWORD_DEFAULT);
                 $stmt2 = $db->prepare($sql2);
                 $stmt2->bindValue(1, $name);
-                $stmt2->bindValue(2, $encrypt);
-                $stmt2->bindValue(3, $image);
-                $stmt2->bindValue(4, $class_id);
+                $stmt2->bindValue(2, $username);
+                $stmt2->bindValue(3, $encrypt);
+                $stmt2->bindValue(4, $image);
                 $stmt2->bindValue(5, $id);
                 $stmt2->execute();
             }
@@ -199,7 +203,7 @@ function deleteTeacherGame($teacher_id) {
     $sql = 'SELECT * FROM game WHERE teacher_id = ?';
     try {
         $db = getDB();
-        $stmt = $db->prepare($sql1);
+        $stmt = $db->prepare($sql);
         $stmt->bindValue(1, $teacher_id);
         $stmt->execute();
         $games = $stmt->fetchAll(PDO::FETCH_OBJ);

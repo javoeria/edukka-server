@@ -149,7 +149,7 @@ function addUserClass() {
         $stmt1 = $db->prepare($sql1);
         $stmt1->bindValue(1, $class_id);
         $stmt1->execute();
-        if ($stmt1->fetchColumn() === 0) {
+        if ($stmt1->fetchColumn() === '0') {
             $output = ['id'=>null];
             echo json_encode($output);
         } else {
@@ -169,7 +169,7 @@ function addUserClass() {
 function removeUserClass() {
     $app = \Slim\Slim::getInstance();
     $id = $app->request()->post('id');
-    $sql = 'UPDATE user SET class_id = NULL WHERE id = ?';
+    $sql = 'UPDATE user SET class_id = 0 WHERE id = ?';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
