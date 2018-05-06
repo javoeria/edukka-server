@@ -21,6 +21,7 @@ $app->get('/user/:id', 'getUser');
 $app->get('/user/activity/:id', 'getUserActivity');
 $app->post('/login', 'logIn');
 $app->post('/signup', 'signUp');
+$app->post('/user/score', 'updateUserScore');
 $app->post('/user/edit', 'updateUser');
 $app->post('/user/delete', 'deleteUser');
 

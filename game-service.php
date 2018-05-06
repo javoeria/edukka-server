@@ -125,16 +125,31 @@ function finishGame() {
     $subject = $app->request()->post('subject');
     $result = $app->request()->post('result');
     $date = date("d-m-Y");
-    $sql = 'INSERT INTO activity (student_id, game_id, subject, result, date) VALUES (?, ?, ?, ?, ?)';
+    $sql = 'SELECT count(*) FROM activity WHERE student_id = ? AND game_id = ?';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
         $stmt->bindValue(1, $student_id);
         $stmt->bindValue(2, $game_id);
-        $stmt->bindValue(3, $subject);
-        $stmt->bindValue(4, $result);
-        $stmt->bindValue(5, $date);
         $stmt->execute();
+        if ($stmt->fetchColumn() === '0') {
+            $sql1 = 'INSERT INTO activity (student_id, game_id, subject, result, date) VALUES (?, ?, ?, ?, ?)';
+            $stmt1 = $db->prepare($sql1);
+            $stmt1->bindValue(1, $student_id);
+            $stmt1->bindValue(2, $game_id);
+            $stmt1->bindValue(3, $subject);
+            $stmt1->bindValue(4, $result);
+            $stmt1->bindValue(5, $date);
+            $stmt1->execute();
+        } else {
+            $sql2 = 'UPDATE activity SET result = ?, date = ? WHERE student_id = ? AND game_id = ?';
+            $stmt2 = $db->prepare($sql2);
+            $stmt2->bindValue(1, $result);
+            $stmt2->bindValue(2, $date);
+            $stmt2->bindValue(3, $student_id);
+            $stmt2->bindValue(4, $game_id);
+            $stmt2->execute();
+        }
         $db = null;
         echo getActivity($student_id,$game_id);
     } catch(PDOException $e) {
