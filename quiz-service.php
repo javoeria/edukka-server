@@ -54,22 +54,18 @@ function getGameQuiz($game_id) {
 
 function createQuiz() {
     $app = \Slim\Slim::getInstance();
-    $type = $app->request()->post('type');
     $question = $app->request()->post('question');
     $answer = $app->request()->post('answer');
     $options = $app->request()->post('options');
-    $hint = $app->request()->post('hint');
     $game_id = $app->request()->post('game_id');
-    $sql = 'INSERT INTO quiz (type, question, answer, options, hint, game_id) VALUES (?, ?, ?, ?, ?, ?)';
+    $sql = 'INSERT INTO quiz (question, answer, options, game_id) VALUES (?, ?, ?, ?)';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindValue(1, $type);
-        $stmt->bindValue(2, $question);
-        $stmt->bindValue(3, $answer);
-        $stmt->bindValue(4, $options);
-        $stmt->bindValue(5, $hint);
-        $stmt->bindValue(6, $game_id);
+        $stmt->bindValue(1, $question);
+        $stmt->bindValue(2, $answer);
+        $stmt->bindValue(3, $options);
+        $stmt->bindValue(4, $game_id);
         $stmt->execute();
         $id = $db->lastInsertId();
         $db = null;
@@ -81,22 +77,18 @@ function createQuiz() {
 
 function updateQuiz() {
     $app = \Slim\Slim::getInstance();
-    $type = $app->request()->post('type');
     $question = $app->request()->post('question');
     $answer = $app->request()->post('answer');
     $options = $app->request()->post('options');
-    $hint = $app->request()->post('hint');
     $id = $app->request()->post('id');
-    $sql = 'UPDATE quiz SET type = ?, question = ?, answer = ?, options = ?, hint = ? WHERE id = ?';
+    $sql = 'UPDATE quiz SET question = ?, answer = ?, options = ? WHERE id = ?';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
-        $stmt->bindValue(1, $type);
-        $stmt->bindValue(2, $question);
-        $stmt->bindValue(3, $answer);
-        $stmt->bindValue(4, $options);
-        $stmt->bindValue(5, $hint);
-        $stmt->bindValue(6, $id);
+        $stmt->bindValue(1, $question);
+        $stmt->bindValue(2, $answer);
+        $stmt->bindValue(3, $options);
+        $stmt->bindValue(4, $id);
         $stmt->execute();
         $db = null;
         echo getQuiz($id);

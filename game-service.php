@@ -59,8 +59,7 @@ function createGame() {
     $description = $app->request()->post('description');
     $locale = $app->request()->post('locale');
     $difficulty = $app->request()->post('difficulty');
-    $teacher_id = $app->request()->post('teacher_id');
-    $sql = 'INSERT INTO game (subject, title, description, locale, difficulty, vote, teacher_id) VALUES (?, ?, ?, ?, ?, 0, ?)';
+    $sql = 'INSERT INTO game (subject, title, description, locale, difficulty, vote) VALUES (?, ?, ?, ?, ?, 0)';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
@@ -69,7 +68,6 @@ function createGame() {
         $stmt->bindValue(3, $description);
         $stmt->bindValue(4, $locale);
         $stmt->bindValue(5, $difficulty);
-        $stmt->bindValue(6, $teacher_id);
         $stmt->execute();
         $id = $db->lastInsertId();
         $db = null;
