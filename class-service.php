@@ -169,7 +169,7 @@ function addUserClass() {
 function removeUserClass() {
     $app = \Slim\Slim::getInstance();
     $id = $app->request()->post('id');
-    $sql = 'UPDATE user SET class_id = 0 WHERE id = ?';
+    $sql = 'UPDATE user SET class_id = 1 WHERE id = ?';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
