@@ -198,7 +198,7 @@ function addTeacherClass($class_id, $user_id) {
 }
 
 function setDefaultClass($class_id) {
-    $sql = 'UPDATE user SET class_id = 0 WHERE class_id = ?';
+    $sql = 'UPDATE user SET class_id = 1 WHERE class_id = ?';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);

@@ -185,8 +185,8 @@ function deleteUser() {
     $id = $app->request()->post('id');
     $role = $app->request()->post('role');
     if ($role === 'teacher') {
+        updateUserClass($id);
         deleteTeacherClass($id);
-        deleteTeacherGame($id);
     } else {
         deleteStudentActivity($id);
     }
@@ -217,36 +217,15 @@ function deleteTeacherClass($teacher_id) {
     }
 }
 
-function deleteTeacherGame($teacher_id) {
-    $sql = 'SELECT * FROM game WHERE teacher_id = ?';
+function updateUserClass($teacher_id) {
+    $sql = 'SELECT class_id FROM user WHERE id = ?';
     try {
         $db = getDB();
         $stmt = $db->prepare($sql);
         $stmt->bindValue(1, $teacher_id);
         $stmt->execute();
-        $games = $stmt->fetchAll(PDO::FETCH_OBJ);
-        if ($games !== []) {
-            $json = json_encode($games);
-            $array = json_decode($json, TRUE);
-            foreach ($array as $item) {
-                deleteGameBy($item['id']);
-            }
-        }
-        $db = null;
-    } catch(PDOException $e) {
-        echo json_encode($e->getMessage());
-    }
-}
-
-function deleteGameBy($id) {
-    deleteGameActivity($id);
-    deleteGameQuiz($id);
-    $sql = 'DELETE FROM game WHERE id = ?';
-    try {
-        $db = getDB();
-        $stmt = $db->prepare($sql);
-        $stmt->bindValue(1, $id);
-        $stmt->execute();
+        $class_id = $stmt->fetchColumn();
+        setDefaultClass($class_id);
         $db = null;
     } catch(PDOException $e) {
         echo json_encode($e->getMessage());
