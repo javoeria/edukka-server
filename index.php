@@ -11,8 +11,7 @@ $app = new \Slim\Slim();
 $app->contentType('application/json');
 
 $app->get('/', function () use ($app) {
-    $app->contentType('text/plain');
-    echo 'Edukka Server ' . phpversion(); 
+    $app->response->redirect('index.html');
 });
 
 // User Service
